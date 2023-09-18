@@ -11,8 +11,12 @@ const Bridge = () => {
   const [contracts, setContracts] = useState([]);
   const [BISON_SEQUENCER_ENDPOINT, setBISON_SEQUENCER_ENDPOINT] = useState("http://127.0.0.1:8008/");
   const [depositeAmount, setDepositeAmount] = useState(0);
+  const [withdrawAmount, setWithdrawAmount] = useState(0);
   const [tokenBalances, setTokenBalances] = useState({});
   const [bBTCAmount, setBBTCAmount] = useState(0);
+  const [peginsData, setPeginsData] = useState([]);
+  const [btcContractEndpoint, setBtcContractEndpoint] = useState("");
+
 
 
 
@@ -21,6 +25,7 @@ const Bridge = () => {
 
     fetchContracts();
     fetchBTCSum(paymentAddress);
+    fetchPegInData();
   }, [paymentAddress]);
 
   //This part of code is used to display BTC balance
@@ -65,16 +70,19 @@ const Bridge = () => {
       // Fetch the balance for each contract
       for (let contract of data.contracts) {
         await fetchBalanceForContract(contract);
+        if (contract.tick === 'btc') {
+          setBtcContractEndpoint(contract.contractEndpoint);
+        }
       }
     } catch (error) {
       console.error('Error:', error);
     }
   }
 
-    //This part of code is used to deposite BTC
+  //This part of code is used to deposite BTC
   const handleDepositeAmountChange = (event) => {
-      setDepositeAmount(event.target.value);
-    }
+    setDepositeAmount(event.target.value);
+  }
 
   const onPegInSignAndSendMessageClick = async (txid) => {
     // 获取 nonce
@@ -119,26 +127,26 @@ const Bridge = () => {
     };
 
     await signMessage(signMessageOptions);
-}
+  }
 
-const sendPegInMessage = async (message) => {
-  await fetch(`${BISON_SEQUENCER_ENDPOINT}/enqueue_transaction`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(message),
-  })
-    .then(response => response.json())
-    .then(data => {
-      alert(JSON.stringify(data));
+  const sendPegInMessage = async (message) => {
+    await fetch(`${BISON_SEQUENCER_ENDPOINT}/enqueue_transaction`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(message),
     })
-    .catch((error) => {
-      console.error('Error while sending the peg-in message:', error);
-    });
-}
+      .then(response => response.json())
+      .then(data => {
+        alert(JSON.stringify(data));
+      })
+      .catch((error) => {
+        console.error('Error while sending the peg-in message:', error);
+      });
+  }
 
-const onSendBtcClick = async () => {
+  const onSendBtcClick = async () => {
     // Finding the btc contract
     const btcContract = contracts.find(contract => contract.tick === 'btc');
 
@@ -167,7 +175,107 @@ const onSendBtcClick = async () => {
       onCancel: () => alert("Canceled"),
     };
     await sendBtcTransaction(sendBtcOptions);
+  }
+
+  //This part of code is used to withdraw
+
+  const handleWithdrawAmountChange = (event) => {
+    setWithdrawAmount(event.target.value);
+  }
+
+  const onPegOutSignAndSendMessageClick = async () => {
+    const nonceResponse = await fetch(`${BISON_SEQUENCER_ENDPOINT}/nonce/${ordinalsAddress}`);
+    const nonceData = await nonceResponse.json();
+    const nonce = nonceData.nonce + 1;
+
+    const pegOutMessageObj = {
+      method: "peg_out",
+      token: "btc",
+      sAddr: ordinalsAddress,
+      rAddr: paymentAddress, // Assuming paymentAddress is a state or prop
+      amount: Math.round(withdrawAmount * 100000000), // Changed to withdrawAmount
+      nonce: nonce,
+      sig: ""
+    };
+
+    const gasResponse = await fetch(`${BISON_SEQUENCER_ENDPOINT}/gas_meter`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(pegOutMessageObj),
+    });
+    const gasData = await gasResponse.json();
+
+    // Update pegOutMessageObj to include gas data
+    pegOutMessageObj.gas_estimated = gasData.gas_estimated;
+    pegOutMessageObj.gas_estimated_hash = gasData.gas_estimated_hash;
+
+
+    const signMessageOptions = {
+      payload: {
+        network: {
+          type: "Testnet",
+        },
+        address: ordinalsAddress,
+        message: JSON.stringify(pegOutMessageObj),
+      },
+      onFinish: (response) => {
+        pegOutMessageObj.sig = response;
+
+        // Assuming the same contract is used for both peg-in and peg-out operations
+        const btcContract = contracts.find(contract => contract.tick === 'btc');
+
+        if (btcContract) {
+          const endpoint = btcContract.contractEndpoint;
+
+          // Use this endpoint to send the peg-out message
+          sendPegOutMessage(pegOutMessageObj, endpoint);
+        } else {
+          console.error('BTC contract not found.');
+        }
+      },
+      onCancel: () => alert("Request canceled."),
+    };
+
+    await signMessage(signMessageOptions);
+  }
+
+  const sendPegOutMessage = async (message, endpoint) => {
+    await fetch(`${BISON_SEQUENCER_ENDPOINT}/enqueue_transaction`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(message),
+    })
+      .then(response => response.json())
+      .then(data => {
+        alert(JSON.stringify(data));
+      })
+      .catch((error) => {
+        console.error('Error while sending the peg-out message:', error);
+      });
+  }
+
+  //This is used to display pegin data
+
+  const fetchPegInData = async () => {
+    try {
+        const response = await fetch(`${btcContractEndpoint}/peginsByAddr/${ordinalsAddress}`);
+        const data = await response.json();
+
+        if (data.results) {
+            setPeginsData(data.results);
+        } else {
+            console.warn(data.message); // or handle this message in another way
+            setPeginsData([]); // set to an empty array or handle it differently
+        }
+    } catch (error) {
+        console.error('Error fetching data:', error);
+    }
 }
+
 
   return (
     <Layout>
@@ -289,13 +397,13 @@ const onSendBtcClick = async () => {
               Cancel
             </button>
             <button onClick={onSendBtcClick}
-            style={{
-              background: '#FF7248',
-              padding: '10px',
-              borderRadius: '10px',
-              fontSize: '17px',
-            }            
-            }>
+              style={{
+                background: '#FF7248',
+                padding: '10px',
+                borderRadius: '10px',
+                fontSize: '17px',
+              }
+              }>
               Confirm Deposit
             </button>
           </div>
@@ -377,7 +485,10 @@ const onSendBtcClick = async () => {
                   border: 'none',
                   background: 'transparent',
                   outline: 'none',
-                }} type="number" />
+                }}
+                  value={withdrawAmount}
+                  onChange={handleWithdrawAmountChange}
+                  type="number" />
                 <span className="ml-3 absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
                   {/* Heroicon name: solid/selector */}
                   <p style={{ color: 'black' }}>Max</p>
@@ -401,7 +512,7 @@ const onSendBtcClick = async () => {
             </label>
 
             <p style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', }}>
-                {tokenBalances['btc'] ? (tokenBalances['btc'] / 100000000).toFixed(8) : '0.00000000'} BTC
+              {tokenBalances['btc'] ? (tokenBalances['btc'] / 100000000).toFixed(8) : '0.00000000'} BTC
             </p>
 
           </div>
@@ -415,12 +526,14 @@ const onSendBtcClick = async () => {
             }}>
               Cancel
             </button>
-            <button style={{
-              background: '#FF7248',
-              padding: '10px',
-              borderRadius: '10px',
-              fontSize: '17px',
-            }}>
+            <button
+              onClick={onPegOutSignAndSendMessageClick}
+              style={{
+                background: '#FF7248',
+                padding: '10px',
+                borderRadius: '10px',
+                fontSize: '17px',
+              }}>
               Confirm Withdraw
             </button>
           </div>
@@ -449,46 +562,13 @@ const onSendBtcClick = async () => {
                         </tr>
                       </thead>
                       <tbody>
-                        <tr className="border-b dark:border-neutral-500">
-                          <td className="whitespace-nowrap px-6 py-4">Bitcoin BTC</td>
-                          <td className="whitespace-nowrap px-6 py-4">$58.3K</td>
-                          <td style={{ color: "red" }} className="whitespace-nowrap px-6 py-4">🔻0.04%</td>
-                        </tr>
-                        <tr className="border-b dark:border-neutral-500">
-                          <td className="whitespace-nowrap px-6 py-4">Bitcoin BTC</td>
-                          <td className="whitespace-nowrap px-6 py-4">$58.3K</td>
-                          <td style={{ color: "red" }} className="whitespace-nowrap px-6 py-4">🔻0.04%</td>
-                        </tr>
-                        <tr className="border-b dark:border-neutral-500">
-                          <td className="whitespace-nowrap px-6 py-4">Bitcoin BTC</td>
-                          <td className="whitespace-nowrap px-6 py-4">$58.3K</td>
-                          <td style={{ color: "red" }} className="whitespace-nowrap px-6 py-4">🔻0.04%</td>
-                        </tr>
-                        <tr className="border-b dark:border-neutral-500">
-                          <td className="whitespace-nowrap px-6 py-4">Bitcoin BTC</td>
-                          <td className="whitespace-nowrap px-6 py-4">$58.3K</td>
-                          <td style={{ color: "red" }} className="whitespace-nowrap px-6 py-4">🔻0.04%</td>
-                        </tr>
-                        <tr className="border-b dark:border-neutral-500">
-                          <td className="whitespace-nowrap px-6 py-4">Bitcoin BTC</td>
-                          <td className="whitespace-nowrap px-6 py-4">$58.3K</td>
-                          <td style={{ color: "red" }} className="whitespace-nowrap px-6 py-4">🔻0.04%</td>
-                        </tr>
-                        <tr className="border-b dark:border-neutral-500">
-                          <td className="whitespace-nowrap px-6 py-4">Bitcoin BTC</td>
-                          <td className="whitespace-nowrap px-6 py-4">$58.3K</td>
-                          <td style={{ color: "red" }} className="whitespace-nowrap px-6 py-4">🔻0.04%</td>
-                        </tr>
-                        <tr className="border-b dark:border-neutral-500">
-                          <td className="whitespace-nowrap px-6 py-4">Bitcoin BTC</td>
-                          <td className="whitespace-nowrap px-6 py-4">$58.3K</td>
-                          <td style={{ color: "red" }} className="whitespace-nowrap px-6 py-4">🔻0.04%</td>
-                        </tr>
-                        <tr className="border-b dark:border-neutral-500">
-                          <td className="whitespace-nowrap px-6 py-4">Bitcoin BTC</td>
-                          <td className="whitespace-nowrap px-6 py-4">$58.3K</td>
-                          <td style={{ color: "red" }} className="whitespace-nowrap px-6 py-4">🔻0.04%</td>
-                        </tr>
+                        {peginsData.map((peg, index) => (
+                          <tr key={index} className="border-b dark:border-neutral-500">
+                            <td className="whitespace-nowrap px-6 py-4">Bitcoin BTC</td>
+                            <td className="whitespace-nowrap px-6 py-4">{peg.amount_sum / 100000000} BTC</td> {/* Convert sats to BTC */}
+                            <td className="whitespace-nowrap px-6 py-4">{peg.L1txid}</td>
+                          </tr>
+                        ))}
                       </tbody>
                     </table>
                   </div>
