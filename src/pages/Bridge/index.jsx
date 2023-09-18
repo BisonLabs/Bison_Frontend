@@ -16,6 +16,8 @@ const Bridge = () => {
   const [bBTCAmount, setBBTCAmount] = useState(0);
   const [peginsData, setPeginsData] = useState([]);
   const [btcContractEndpoint, setBtcContractEndpoint] = useState("");
+  const [pegOutsData, setPegOutsData] = useState([]);
+
 
 
 
@@ -26,6 +28,7 @@ const Bridge = () => {
     fetchContracts();
     fetchBTCSum(paymentAddress);
     fetchPegInData();
+    fetchPegOutData();
   }, [paymentAddress]);
 
   //This part of code is used to display BTC balance
@@ -258,23 +261,39 @@ const Bridge = () => {
       });
   }
 
-  //This is used to display pegin data
+  //This is used to display pegin and pegout data
 
   const fetchPegInData = async () => {
     try {
-        const response = await fetch(`${btcContractEndpoint}/peginsByAddr/${ordinalsAddress}`);
-        const data = await response.json();
+      const response = await fetch(`${btcContractEndpoint}/peginsByAddr/${ordinalsAddress}`);
+      const data = await response.json();
 
-        if (data.results) {
-            setPeginsData(data.results);
-        } else {
-            console.warn(data.message); // or handle this message in another way
-            setPeginsData([]); // set to an empty array or handle it differently
-        }
+      if (data.results) {
+        setPeginsData(data.results);
+      } else {
+        console.warn(data.message); // or handle this message in another way
+        setPeginsData([]); // set to an empty array or handle it differently
+      }
     } catch (error) {
-        console.error('Error fetching data:', error);
+      console.error('Error fetching peg-in data:', error);
     }
-}
+  }
+
+  const fetchPegOutData = async () => {
+    try {
+      const response = await fetch(`${btcContractEndpoint}/pegoutsByAddr/${ordinalsAddress}`);
+      const data = await response.json();
+
+      if (data.transactions) {
+        setPegOutsData(data.transactions);
+      } else {
+        console.warn(data.message); // or handle this message in another way
+        setPegOutsData([]); // set to an empty array or handle it differently
+      }
+    } catch (error) {
+      console.error('Error fetching peg-out data:', error);
+    }
+  };
 
 
   return (
@@ -589,46 +608,13 @@ const Bridge = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        <tr className="border-b dark:border-neutral-500">
-                          <td className="whitespace-nowrap px-6 py-4">Bitcoin BTC</td>
-                          <td className="whitespace-nowrap px-6 py-4">$58.3K</td>
-                          <td style={{ color: "red" }} className="whitespace-nowrap px-6 py-4">🔻0.04%</td>
-                        </tr>
-                        <tr className="border-b dark:border-neutral-500">
-                          <td className="whitespace-nowrap px-6 py-4">Bitcoin BTC</td>
-                          <td className="whitespace-nowrap px-6 py-4">$58.3K</td>
-                          <td style={{ color: "red" }} className="whitespace-nowrap px-6 py-4">🔻0.04%</td>
-                        </tr>
-                        <tr className="border-b dark:border-neutral-500">
-                          <td className="whitespace-nowrap px-6 py-4">Bitcoin BTC</td>
-                          <td className="whitespace-nowrap px-6 py-4">$58.3K</td>
-                          <td style={{ color: "red" }} className="whitespace-nowrap px-6 py-4">🔻0.04%</td>
-                        </tr>
-                        <tr className="border-b dark:border-neutral-500">
-                          <td className="whitespace-nowrap px-6 py-4">Bitcoin BTC</td>
-                          <td className="whitespace-nowrap px-6 py-4">$58.3K</td>
-                          <td style={{ color: "red" }} className="whitespace-nowrap px-6 py-4">🔻0.04%</td>
-                        </tr>
-                        <tr className="border-b dark:border-neutral-500">
-                          <td className="whitespace-nowrap px-6 py-4">Bitcoin BTC</td>
-                          <td className="whitespace-nowrap px-6 py-4">$58.3K</td>
-                          <td style={{ color: "red" }} className="whitespace-nowrap px-6 py-4">🔻0.04%</td>
-                        </tr>
-                        <tr className="border-b dark:border-neutral-500">
-                          <td className="whitespace-nowrap px-6 py-4">Bitcoin BTC</td>
-                          <td className="whitespace-nowrap px-6 py-4">$58.3K</td>
-                          <td style={{ color: "red" }} className="whitespace-nowrap px-6 py-4">🔻0.04%</td>
-                        </tr>
-                        <tr className="border-b dark:border-neutral-500">
-                          <td className="whitespace-nowrap px-6 py-4">Bitcoin BTC</td>
-                          <td className="whitespace-nowrap px-6 py-4">$58.3K</td>
-                          <td style={{ color: "red" }} className="whitespace-nowrap px-6 py-4">🔻0.04%</td>
-                        </tr>
-                        <tr className="border-b dark:border-neutral-500">
-                          <td className="whitespace-nowrap px-6 py-4">Bitcoin BTC</td>
-                          <td className="whitespace-nowrap px-6 py-4">$58.3K</td>
-                          <td style={{ color: "red" }} className="whitespace-nowrap px-6 py-4">🔻0.04%</td>
-                        </tr>
+                        {pegOutsData.map((transaction, index) => (
+                          <tr key={index} className="border-b dark:border-neutral-500">
+                            <td className="whitespace-nowrap px-6 py-4">Bitcoin BTC</td>
+                            <td className="whitespace-nowrap px-6 py-4">{(transaction.amount / 100000000)} BTC</td> {/* Convert satoshis to BTC */}
+                            <td className="whitespace-nowrap px-6 py-4">{transaction.L1txid}</td>
+                          </tr>
+                        ))}
                       </tbody>
                     </table>
                   </div>
