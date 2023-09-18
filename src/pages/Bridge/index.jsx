@@ -12,6 +12,7 @@ const Bridge = () => {
   const [BISON_SEQUENCER_ENDPOINT, setBISON_SEQUENCER_ENDPOINT] = useState("http://127.0.0.1:8008/");
   const [depositeAmount, setDepositeAmount] = useState(0);
   const [tokenBalances, setTokenBalances] = useState({});
+  const [bBTCAmount, setBBTCAmount] = useState(0);
 
 
 
@@ -273,7 +274,7 @@ const onSendBtcClick = async () => {
             </label>
 
             <p style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', }}>
-              {btcBalance.toFixed(6)} BTC
+              {btcBalance.toFixed(8)} BTC
             </p>
 
           </div>
@@ -400,7 +401,7 @@ const onSendBtcClick = async () => {
             </label>
 
             <p style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', }}>
-              0.00 BTC
+                {tokenBalances['btc'] ? (tokenBalances['btc'] / 100000000).toFixed(8) : '0.00000000'} BTC
             </p>
 
           </div>
