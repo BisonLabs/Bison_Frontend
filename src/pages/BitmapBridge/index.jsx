@@ -12,8 +12,42 @@ const BitmapBridge = () => {
   const [selectedBitmapsItems, setSelectedBitmapsItems] = useState([]);
   const [BitmapBridgeItems, setBitmapBridgeItems] = useState([]); // 使用状态来存储从服务器获取的数据
 
-  const fetchData = () => {
+  useEffect(() => {
     const trac_base = io("https://api-testnet.trac.network");
+
+    const handleResponse = async (msg) => {
+      if (msg.func === "walletLight") {
+        const items = await Promise.all(msg.result.map(async id => {
+          const shortId = id.slice(0, 4) + '...' + id.slice(-6);
+          const inscriptionURL = `https://testnet.ordinals.com/inscription/${id}`;
+          const response = await fetch(inscriptionURL);
+          const htmlContent = await response.text();
+
+          // 使用正则表达式从HTML中提取location信息
+          const locationMatch = htmlContent.match(/<dt>location<\/dt>\s+<dd class=monospace>([^<]+)<\/dd>/);
+          const location = locationMatch ? locationMatch[1] : null;
+
+          // 使用正则表达式从HTML中提取output value信息
+          const outputValueMatch = htmlContent.match(/<dt>output value<\/dt>\s+<dd>([^<]+)<\/dd>/);
+          const outputValue = outputValueMatch ? parseInt(outputValueMatch[1], 10) : null;
+
+          const contentURL = `https://testnet.ordinals.com/content/${id}`;
+          const contentResponse = await fetch(contentURL);
+          const name = await contentResponse.text();
+
+          return {
+            id: id,
+            shortId: shortId,
+            name: name,
+            location: location,
+            value: outputValue
+          };
+        }));
+        setBitmapBridgeItems(items);
+      }
+    };
+
+    trac_base.on("response", handleResponse);
 
     if (ordinalsAddress) {
       trac_base.emit("get", {
@@ -21,23 +55,11 @@ const BitmapBridge = () => {
         args: [ordinalsAddress.trim()],
         call_id: "",
       });
-
-      trac_base.on("response", (msg) => {
-        if (msg.func === "walletLight") {
-          setBitmapBridgeItems(msg.result);
-          console.log(msg.result);
-        }
-      });
     }
 
-    return trac_base;
-  };
-
-  useEffect(() => {
-    const trac_base = fetchData();
-
     return () => {
-      trac_base.disconnect();
+      trac_base.off("response", handleResponse);  // Remove the event listener
+      trac_base.disconnect();  // Disconnect the socket
     };
   }, [ordinalsAddress]);
 
