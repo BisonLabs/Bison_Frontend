@@ -131,13 +131,16 @@ const SwapAndSend = () => {
   const fetchContracts = async () => {
     const response = await fetch(`${BISON_SEQUENCER_ENDPOINT}/contracts_list`);
     const data = await response.json();
-
-    // Fetch the balance for each contract
-    for (let contract of data.contracts) {
+  
+    // Filter contracts that are of type "Token"
+    const tokenContracts = data.contracts.filter(contract => contract.type === "Token");
+  
+    // Fetch the balance for each token contract
+    for (let contract of tokenContracts) {
       await fetchBalanceForContract(contract);
     }
-
-    setContracts(data.contracts);
+  
+    setContracts(tokenContracts);
   }
 
   useEffect(() => {

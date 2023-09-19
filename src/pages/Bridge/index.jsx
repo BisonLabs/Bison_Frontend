@@ -69,9 +69,10 @@ const Bridge = () => {
       const response = await fetch(`${BISON_SEQUENCER_ENDPOINT}contracts_list`);
       const data = await response.json();
       setContracts(data.contracts);
+      const tokenContracts = data.contracts.filter(contract => contract.type === "Token");
 
       // Fetch the balance for each contract
-      for (let contract of data.contracts) {
+      for (let contract of tokenContracts) {
         await fetchBalanceForContract(contract);
         if (contract.tick === 'btc') {
           setBtcContractEndpoint(contract.contractEndpoint);
