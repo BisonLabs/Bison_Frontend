@@ -9,7 +9,7 @@ const Bridge = () => {
   const { ordinalsAddress, paymentAddress } = useWallet(); // 使用useWallet钩子
   const [btcBalance, setBtcBalance] = useState(0); // 初始化BTC余额为0
   const [contracts, setContracts] = useState([]);
-  const [BISON_SEQUENCER_ENDPOINT, setBISON_SEQUENCER_ENDPOINT] = useState("http://127.0.0.1:8008/");
+  const [BISON_SEQUENCER_ENDPOINT, setBISON_SEQUENCER_ENDPOINT] = useState("http://192.168.254.67:8008/");
   const [depositeAmount, setDepositeAmount] = useState(0);
   const [withdrawAmount, setWithdrawAmount] = useState(0);
   const [tokenBalances, setTokenBalances] = useState({});
@@ -69,7 +69,7 @@ const Bridge = () => {
       const response = await fetch(`${BISON_SEQUENCER_ENDPOINT}contracts_list`);
       const data = await response.json();
       setContracts(data.contracts);
-      const tokenContracts = data.contracts.filter(contract => contract.type === "Token");
+      const tokenContracts = data.contracts.filter(contract => contract.contractType === "Token");
 
       // Fetch the balance for each contract
       for (let contract of tokenContracts) {
@@ -166,7 +166,7 @@ const Bridge = () => {
         },
         recipients: [
           {
-            address: btcContract.contractAddr,
+            address: btcContract.valutAddr,
             amountSats: parseInt(depositeAmount * 100000000), // Convert amount to satoshis (assuming depositeAmount is in BTC)
           },
         ],

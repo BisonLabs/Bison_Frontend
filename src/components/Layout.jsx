@@ -19,6 +19,11 @@ const containerStyle = {
   transition: "all 0.3s ease-in-out",
 };
 
+const formatAddress = (address) => {
+  if (!address) return "";
+  return `${address.slice(0, 4)}...${address.slice(-4)}`;
+};
+
 const activeContainerStyle = {
   ...containerStyle,
   padding: "10px",
@@ -44,11 +49,11 @@ const Layout = ({ children }) => {
   const [selectedSocial, setSelectedSocial] = useState("");
   const leftBarRef = useRef();
   const location = useLocation();
-  const { 
-    ordinalsAddress, setOrdinalsAddress, 
-    paymentAddress, setPaymentAddress, 
-    ordinalsPublicKey, setOrdinalsPublicKey, 
-    paymentPublicKey, setPaymentPublicKey 
+  const {
+    ordinalsAddress, setOrdinalsAddress,
+    paymentAddress, setPaymentAddress,
+    ordinalsPublicKey, setOrdinalsPublicKey,
+    paymentPublicKey, setPaymentPublicKey
   } = useWallet();
 
   const onConnectClick = async () => {
@@ -66,13 +71,13 @@ const Layout = ({ children }) => {
         setOrdinalsPublicKey(response.addresses[0].publicKey);
         setPaymentPublicKey(response.addresses[1].publicKey);
       },
-      onCancel: () => alert("请求已取消"),
+      onCancel: () => alert("Request Cancel"),
     };
     await getAddress(getAddressOptions);
     // 如果您有fetchContracts函数，请取消下面这行的注释
     // this.fetchContracts(); 
   };
-  
+
   useEffect(() => {
     setActiveMenu(location.pathname);
     preventBodyScroll();
@@ -139,10 +144,9 @@ const Layout = ({ children }) => {
   return (
     <div className="overflow-y-hidden justify-between flex flex-col h-screen">
       <div
-        className={`fixed inset-0 transition-opacity duration-300 ${
-          (isMobile && !isSidebarCollapsed) || !isSocialSlidebarCollapsed
+        className={`fixed inset-0 transition-opacity duration-300 ${(isMobile && !isSidebarCollapsed) || !isSocialSlidebarCollapsed
             ? "bg-[rgba(0,0,0,0.5)] backdrop-blur-[5px]"
-            : "bg-opacity-0 pointer-events-none" } 
+            : "bg-opacity-0 pointer-events-none"} 
           ${isSocialSlidebarCollapsed ? "z-20" : "z-40"}
         `}
         onClick={handleClickOutside}
@@ -158,7 +162,7 @@ const Layout = ({ children }) => {
         <div className="ml-10 flex gap-4 items-center">
           <img
             src="/img/menuImages/sidebarimg.png"
-            alt="Elon Musk"
+            alt=""
             width={54}
             className="rounded-full"
           />
@@ -183,7 +187,7 @@ const Layout = ({ children }) => {
           }}
             onClick={onConnectClick}
           >
-            Connect Wallet
+            {ordinalsAddress ? formatAddress(ordinalsAddress) : "Connect Wallet"}
           </button>
         </div>
       </div>
@@ -208,10 +212,9 @@ const Layout = ({ children }) => {
                 <Link key={path} to={path}>
                   <div
                     className={`cursor-pointer transition ease-in-out duration-300 hover:text-white rounded-lg p-3 
-                      ${
-                        activeMenu.includes(path)
-                          ? "text-white font-semibold"
-                          : "text-[#747474]"
+                      ${activeMenu.includes(path)
+                        ? "text-white font-semibold"
+                        : "text-[#747474]"
                       }
                     `}
                     style={
@@ -221,17 +224,17 @@ const Layout = ({ children }) => {
                     {label}
                   </div>
                   <div
-                    className={`${ label === "Research" && "mb-[50px]" } text-black rounded-lg `}
+                    className={`${label === "Research" && "mb-[50px]"} text-black rounded-lg `}
                     style={
                       activeMenu.includes(path)
                         ? activeContainerStyle
                         : containerStyle
                     }
                   >
-                     <img
-                        src={`/img/menuImages/sidebarImg.png`}
-                        alt="Category"
-                      />
+                    <img
+                      src={`/img/menuImages/sidebarImg.png`}
+                      alt="Category"
+                    />
                   </div>
                 </Link>
               ))}
@@ -249,13 +252,12 @@ const Layout = ({ children }) => {
           className="h-full overflow-auto"
         >
           <div
-            className={`absolute bottom-[70px] z-30 transition-all duration-500 ${
-              isSidebarCollapsed
+            className={`absolute bottom-[70px] z-30 transition-all duration-500 ${isSidebarCollapsed
                 ? "-ml-[15px]"
                 : isMobile
-                ? "ml-[200px]"
-                : "-ml-[80px]"
-            }`}
+                  ? "ml-[200px]"
+                  : "-ml-[80px]"
+              }`}
           >
             <button
               className="rounded-full border-2 border-white px-3 py-2 transition hover:bg-gray-600"

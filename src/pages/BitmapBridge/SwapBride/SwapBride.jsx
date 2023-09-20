@@ -18,8 +18,10 @@ const SwapBridge = (props) => {
     const handleAddSelectedBitmap = props.handleAddSelectedBitmap
     const handleDeleteSelectedBitmap = props.handleDeleteSelectedBitmap
     const { ordinalsAddress, paymentAddress, ordinalsPublicKey } = useWallet();
-    const [BISON_SEQUENCER_ENDPOINT, setBISON_SEQUENCER_ENDPOINT] = useState("http://127.0.0.1:8008/");
+    const [BISON_SEQUENCER_ENDPOINT, setBISON_SEQUENCER_ENDPOINT] = useState("http://192.168.254.67:8008/");
     const [recipientAddress, setRecipientAddress] = useState("");
+    const [swapContracts, setSwapContracts] = useState([]);
+
 
     const fetchContracts = async () => {
         try {
