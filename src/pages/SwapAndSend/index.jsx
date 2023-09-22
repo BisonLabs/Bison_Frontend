@@ -74,6 +74,7 @@ const SwapAndSend = () => {
       transferAmount = parseInt(amount, 10);
     }
 
+
     const messageObj = {
       method: "transfer",
       sAddr: ordinalsAddress,
@@ -99,6 +100,23 @@ const SwapAndSend = () => {
     messageObj.gas_estimated = gasData.gas_estimated;
     messageObj.gas_estimated_hash = gasData.gas_estimated_hash;
 
+    // 检查余额是否足够
+    if (selectedTransferToken === 'btc') {
+      if (tokenBalances['btc'] < (transferAmount + gasData.gas_estimated)) {
+        alert("Your BTC balance is insufficient to cover the transaction amount and estimated gas fees.");
+        return;
+      }
+    } else {
+      if (tokenBalances[selectedTransferToken] < transferAmount) {
+        alert(`Your ${selectedTransferToken} balance is insufficient for this transaction.`);
+        return;
+      }
+      if (tokenBalances['btc'] < gasData.gas_estimated) {
+        alert("Your BTC balance is insufficient to cover the estimated gas fees.");
+        return;
+      }
+    }
+
     const signMessageOptions = {
       payload: {
         network: {
@@ -116,13 +134,6 @@ const SwapAndSend = () => {
 
     await signMessage(signMessageOptions);
 
-    // Fetch the balance for the existing method (if needed)
-    //this.fetchBalance(ordinalsAddress);
-
-    // Fetch the BTC sum for the ordinalsAddress
-    //this.fetchBTCSum(ordinalsAddress);
-    //this.fetchBTCRate(); // Fetch BTC rate
-    //this.fetchContracts();
   }
 
 
@@ -138,7 +149,7 @@ const SwapAndSend = () => {
       .then(response => response.json())
       .then(data => {
         alert(JSON.stringify(data));
-        this.fetchBalance(ordinalsAddress);
+        fetchContracts();
       })
       .catch((error) => {
         console.error('Error:', error);
@@ -215,6 +226,11 @@ const SwapAndSend = () => {
       const contract1 = contracts.find(contract => contract.tick === selectedSwapToken1);
       const contract2 = contracts.find(contract => contract.tick === selectedSwapToken2);
 
+      let adjustedSwapAmount = swapAmount;
+
+      if (selectedSwapToken1.toLowerCase() === "btc" || selectedSwapToken2.toLowerCase() === "btc") {
+        adjustedSwapAmount = Math.round(swapAmount * 100000000); // 1 btc = 100,000,000 sats
+      }
 
 
       if (!contract1 || !contract2) return;
@@ -242,13 +258,14 @@ const SwapAndSend = () => {
             tick2: selectedSwapToken2,
             contractAddress1: contractAddress1,
             contractAddress2: contractAddress2,
-            amount1: swapAmount,
+            amount1: adjustedSwapAmount,
           }),
         });
 
         const data = await response.json();
         console.log(data);
-        setQuote(data); // 如果您需要存储quote的结果
+        setQuote(data);
+        setAmount2(data.amount2);  // 如果您需要存储quote的结果
       } catch (error) {
         console.error("Error fetching quote:", error);
       }
@@ -272,6 +289,131 @@ const SwapAndSend = () => {
       }
     }
   };
+
+
+  const handleSwapClick = async () => {
+
+
+    let adjustedSwapAmount = swapAmount;
+
+    if (selectedSwapToken1.toLowerCase() === "btc" || selectedSwapToken2.toLowerCase() === "btc") {
+      adjustedSwapAmount = Math.round(swapAmount * 100000000); // 1 btc = 100,000,000 sats
+    }
+    const amount1 = adjustedSwapAmount;
+
+    const tick1 = selectedSwapToken1;
+    const tick2 = selectedSwapToken2;
+    const expiry = new Date(new Date().getTime() + 1 * 60000).toISOString();
+
+    const contract1 = contracts.find(contract => contract.tick === tick1);
+    const contract2 = contracts.find(contract => contract.tick === tick2);
+    const contractAddress1 = contract1 ? contract1.contractAddr : "";
+    const contractAddress2 = contract2 ? contract2.contractAddr : "";
+
+    // 获取 nonce
+    const nonceResponse = await fetch(`${BISON_SEQUENCER_ENDPOINT}/nonce/${ordinalsAddress}`);
+    const nonceData = await nonceResponse.json();
+    const nonce = nonceData.nonce + 1;
+
+
+
+
+
+    const messageObj = {
+      method: "swap",
+      expiry: expiry,
+      tick1: tick1,
+      contractAddress1: contractAddress1,
+      amount1: amount1,
+      tick2: tick2,
+      contractAddress2: contractAddress2,
+      amount2: amount2,
+      makerAddr: ordinalsAddress,
+      takerAddr: "",
+      nonce: nonce,
+      slippage: 0.02,
+      makerSig: "",
+      takerSig: ""
+    };
+
+    // 先将messageObj发送到/gas_meter以获取gas数据
+    const gasResponse = await fetch(`${BISON_SEQUENCER_ENDPOINT}/gas_meter`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(messageObj),
+    });
+    const gasData = await gasResponse.json();
+
+    if (selectedSwapToken1 === 'btc') {
+      if (tokenBalances['btc'] < (adjustedSwapAmount + gasData.gas_estimated)) {
+        alert("Your BTC balance is insufficient to cover the swap amount and estimated gas fees.");
+        return;
+      }
+    } else {
+      if (tokenBalances[selectedSwapToken1] < adjustedSwapAmount) {
+        alert(`Your ${selectedSwapToken1} balance is insufficient for this swap.`);
+        return;
+      }
+      if (tokenBalances['btc'] < gasData.gas_estimated) {
+        alert("Your BTC balance is insufficient to cover the estimated gas fees.");
+        return;
+      }
+    }
+    
+    // 更新messageObj以包含gas数据
+    messageObj.gas_estimated = gasData.gas_estimated;
+    messageObj.gas_estimated_hash = gasData.gas_estimated_hash;
+
+    const signMessageOptions = {
+      payload: {
+        network: {
+          type: "Testnet",
+        },
+        address: ordinalsAddress,
+        message: JSON.stringify(messageObj),
+      },
+      onFinish: (response) => {
+        messageObj.makerSig = response;
+        onSwapMessageClick(messageObj);
+      },
+      onCancel: () => alert("Swap canceled"),
+    };
+
+    await signMessage(signMessageOptions);
+
+    fetchContracts();
+  };
+
+
+  const onSwapMessageClick = async (signedMessage) => {
+    // Make a HTTP POST request to /enqueue_transaction
+    await fetch(`${BISON_SEQUENCER_ENDPOINT}/enqueue_transaction`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(signedMessage),
+    })
+      .then(response => response.json())
+      .then(data => {
+        alert(JSON.stringify(data));
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+      });
+  };
+
+
+  useEffect(() => {
+    setAmount("");
+  }, [selectedTransferToken]);
+
+  useEffect(() => {
+    setSwapAmount("");
+  }, [selectedSwapToken1]);
+
 
 
   return (
@@ -298,7 +440,7 @@ const SwapAndSend = () => {
 
           <div style={{ marginTop: '60px', fontSize: '40px' }}>
             <h3>
-              $2,377,552.30
+              $0
             </h3>
           </div>
 
@@ -370,10 +512,10 @@ const SwapAndSend = () => {
                 background: 'transparent',
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center',
+                justifyContent: 'flex-start',
               }}
             >
-              {amount2}
+              {selectedSwapToken2.toLowerCase() === "btc" ? (amount2 / 100000000).toFixed(8) : amount2}
             </div>
 
             <select style={{
@@ -398,12 +540,14 @@ const SwapAndSend = () => {
             fontSize: '15px',
           }}></p>
 
-          <button style={{
-            background: '#ff7248',
-            padding: '13px',
-            borderRadius: '35px',
-            marginTop: '27px',
-          }}>
+          <button
+            onClick={handleSwapClick}
+            style={{
+              background: '#ff7248',
+              padding: '13px',
+              borderRadius: '35px',
+              marginTop: '27px',
+            }}>
             Swap
           </button>
 

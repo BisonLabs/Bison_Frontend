@@ -15,7 +15,7 @@ const Bridge = () => {
   const [tokenBalances, setTokenBalances] = useState({});
   const [bBTCAmount, setBBTCAmount] = useState(0);
   const [peginsData, setPeginsData] = useState([]);
-  const [btcContractEndpoint, setBtcContractEndpoint] = useState("");
+  const [btcContractEndpoint, setBtcContractEndpoint] = useState("http://192.168.254.67:5005/");
   const [pegOutsData, setPegOutsData] = useState([]);
 
 
@@ -31,6 +31,13 @@ const Bridge = () => {
     fetchPegOutData();
   }, [paymentAddress]);
 
+  useEffect(() => {
+
+    fetchContracts();
+    fetchBTCSum(paymentAddress);
+    fetchPegInData();
+    fetchPegOutData();
+  }, []);
   //This part of code is used to display BTC balance
 
   const fetchBTCSum = async (Address) => {
@@ -123,6 +130,8 @@ const Bridge = () => {
 
           // Use this endpoint to send the message
           sendPegInMessage(pegInMessageObj, endpoint);
+          fetchBTCSum(paymentAddress);
+          fetchPegInData();
         } else {
           console.error('BTC contract not found.');
         }
@@ -174,8 +183,9 @@ const Bridge = () => {
       },
       onFinish: (response) => {
         alert(response);
-        onPegInSignAndSendMessageClick(response);
-      },
+        setTimeout(() => {
+          onPegInSignAndSendMessageClick(response);
+        }, 100);       },
       onCancel: () => alert("Canceled"),
     };
     await sendBtcTransaction(sendBtcOptions);
@@ -211,11 +221,17 @@ const Bridge = () => {
     });
     const gasData = await gasResponse.json();
 
+
     // Update pegOutMessageObj to include gas data
     pegOutMessageObj.gas_estimated = gasData.gas_estimated;
     pegOutMessageObj.gas_estimated_hash = gasData.gas_estimated_hash;
 
+    const totalWithGas = pegOutMessageObj.amount + pegOutMessageObj.gas_estimated; // 用户想要提款的金额加上估计的 gas 费用
 
+    if (tokenBalances['btc'] < totalWithGas) {
+        alert("You don't have enough BTC to cover the withdrawal and gas fees.");
+        return;
+    }
     const signMessageOptions = {
       payload: {
         network: {
@@ -295,6 +311,81 @@ const Bridge = () => {
       console.error('Error fetching peg-out data:', error);
     }
   };
+
+
+
+  const onBitmapPegOutSignAndSendMessageClick = async () => {
+    const nonceResponse = await fetch(`${BISON_SEQUENCER_ENDPOINT}/nonce/${ordinalsAddress}`);
+    const nonceData = await nonceResponse.json();
+    const nonce = nonceData.nonce + 1;
+
+
+    const pegOutMessageObj = {
+      method: "bitmap_peg_out",
+      token: "bmap",
+      Addr: ordinalsAddress,
+      amount: 1, // 设为1 BTC的satoshi值
+      nonce: nonce,
+      sig: ""
+    };
+
+    if (tokenBalances['bmap'] < pegOutMessageObj.amount) {
+      alert("Your Bitmap balance is insufficient for this transaction.");
+      return;
+    }
+    const gasResponse = await fetch(`${BISON_SEQUENCER_ENDPOINT}/gas_meter`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(pegOutMessageObj),
+    });
+    const gasData = await gasResponse.json();
+
+    if (tokenBalances['btc'] < gasData.gas_estimated) {
+      alert("Your BTC balance is insufficient to cover the estimated gas fees.");
+      return;
+  }
+  
+    // 更新pegOutMessageObj以包含gas数据
+    pegOutMessageObj.gas_estimated = gasData.gas_estimated;
+    pegOutMessageObj.gas_estimated_hash = gasData.gas_estimated_hash;
+
+
+    const signMessageOptions = {
+      payload: {
+        network: {
+          type: "Testnet",
+        },
+        address: ordinalsAddress,
+        message: JSON.stringify(pegOutMessageObj),
+      },
+      onFinish: (response) => {
+        pegOutMessageObj.sig = response;
+        sendBitmapPegOutMessage(pegOutMessageObj);
+      },
+      onCancel: () => alert("Request canceled."),
+    };
+
+    await signMessage(signMessageOptions);
+  }
+
+  const sendBitmapPegOutMessage = async (message) => {
+    await fetch(`${BISON_SEQUENCER_ENDPOINT}/enqueue_transaction`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(message),
+    })
+      .then(response => response.json())
+      .then(data => {
+        alert(JSON.stringify(data));
+      })
+      .catch((error) => {
+        console.error('Error while sending the peg-out message:', error);
+      });
+  }
 
 
   return (
@@ -531,6 +622,13 @@ const Bridge = () => {
               Avalible{" "}
             </label>
 
+            <p style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', }}>   
+            {tokenBalances['bmap'] ? (tokenBalances['bmap']) : '0'} BMAP       
+            </p>
+
+
+            
+
             <p style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', }}>
               {tokenBalances['btc'] ? (tokenBalances['btc'] / 100000000).toFixed(8) : '0.00000000'} BTC
             </p>
@@ -538,13 +636,15 @@ const Bridge = () => {
           </div>
 
           <div className="mt-2" style={{ textAlign: 'right', }}>
-            <button className="mx-3" style={{
+            <button
+            onClick={onBitmapPegOutSignAndSendMessageClick} 
+            className="mx-3" style={{
               background: '#FF7248',
               padding: '10px',
               borderRadius: '10px',
               fontSize: '17px',
             }}>
-              Cancel
+              Withdraw 1 Bitmap
             </button>
             <button
               onClick={onPegOutSignAndSendMessageClick}
