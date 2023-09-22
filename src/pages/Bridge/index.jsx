@@ -9,13 +9,13 @@ const Bridge = () => {
   const { ordinalsAddress, paymentAddress } = useWallet(); // 使用useWallet钩子
   const [btcBalance, setBtcBalance] = useState(0); // 初始化BTC余额为0
   const [contracts, setContracts] = useState([]);
-  const [BISON_SEQUENCER_ENDPOINT, setBISON_SEQUENCER_ENDPOINT] = useState("http://192.168.254.67:8008/");
+  const [BISON_SEQUENCER_ENDPOINT, setBISON_SEQUENCER_ENDPOINT] = useState("http://209.141.49.238:8008/");
   const [depositeAmount, setDepositeAmount] = useState(0);
   const [withdrawAmount, setWithdrawAmount] = useState(0);
   const [tokenBalances, setTokenBalances] = useState({});
   const [bBTCAmount, setBBTCAmount] = useState(0);
   const [peginsData, setPeginsData] = useState([]);
-  const [btcContractEndpoint, setBtcContractEndpoint] = useState("http://192.168.254.67:5005/");
+  const [btcContractEndpoint, setBtcContractEndpoint] = useState("http://209.141.49.238:5005/");
   const [pegOutsData, setPegOutsData] = useState([]);
 
 
@@ -92,7 +92,10 @@ const Bridge = () => {
 
   //This part of code is used to deposite BTC
   const handleDepositeAmountChange = (event) => {
-    setDepositeAmount(event.target.value);
+    const value = parseFloat(event.target.value);
+    if (value >= 0) { // Only update the state if the value is non-negative
+      setDepositeAmount(value);
+    }
   }
 
   const onPegInSignAndSendMessageClick = async (txid) => {
@@ -153,6 +156,10 @@ const Bridge = () => {
       .then(response => response.json())
       .then(data => {
         alert(JSON.stringify(data));
+        fetchContracts();
+        fetchBTCSum(paymentAddress);
+        fetchPegInData();
+        fetchPegOutData();
       })
       .catch((error) => {
         console.error('Error while sending the peg-in message:', error);
@@ -185,7 +192,8 @@ const Bridge = () => {
         alert(response);
         setTimeout(() => {
           onPegInSignAndSendMessageClick(response);
-        }, 100);       },
+        }, 100);
+      },
       onCancel: () => alert("Canceled"),
     };
     await sendBtcTransaction(sendBtcOptions);
@@ -194,9 +202,11 @@ const Bridge = () => {
   //This part of code is used to withdraw
 
   const handleWithdrawAmountChange = (event) => {
-    setWithdrawAmount(event.target.value);
-  }
-
+    const value = parseFloat(event.target.value);
+    if (value >= 0) { // Only update the state if the value is non-negative
+      setWithdrawAmount(value);
+    }
+  };
   const onPegOutSignAndSendMessageClick = async () => {
     const nonceResponse = await fetch(`${BISON_SEQUENCER_ENDPOINT}/nonce/${ordinalsAddress}`);
     const nonceData = await nonceResponse.json();
@@ -229,8 +239,8 @@ const Bridge = () => {
     const totalWithGas = pegOutMessageObj.amount + pegOutMessageObj.gas_estimated; // 用户想要提款的金额加上估计的 gas 费用
 
     if (tokenBalances['btc'] < totalWithGas) {
-        alert("You don't have enough BTC to cover the withdrawal and gas fees.");
-        return;
+      alert("You don't have enough BTC to cover the withdrawal and gas fees.");
+      return;
     }
     const signMessageOptions = {
       payload: {
@@ -272,6 +282,10 @@ const Bridge = () => {
       .then(response => response.json())
       .then(data => {
         alert(JSON.stringify(data));
+        fetchContracts();
+        fetchBTCSum(paymentAddress);
+        fetchPegInData();
+        fetchPegOutData();
       })
       .catch((error) => {
         console.error('Error while sending the peg-out message:', error);
@@ -345,8 +359,8 @@ const Bridge = () => {
     if (tokenBalances['btc'] < gasData.gas_estimated) {
       alert("Your BTC balance is insufficient to cover the estimated gas fees.");
       return;
-  }
-  
+    }
+
     // 更新pegOutMessageObj以包含gas数据
     pegOutMessageObj.gas_estimated = gasData.gas_estimated;
     pegOutMessageObj.gas_estimated_hash = gasData.gas_estimated_hash;
@@ -381,12 +395,26 @@ const Bridge = () => {
       .then(response => response.json())
       .then(data => {
         alert(JSON.stringify(data));
+        fetchContracts();
+        fetchBTCSum(paymentAddress);
+        fetchPegInData();
+        fetchPegOutData();
       })
       .catch((error) => {
         console.error('Error while sending the peg-out message:', error);
       });
   }
 
+  const handleMaxDeposite = () => {
+    const maxAmount = Math.max(btcBalance - 0.0001, 0);
+    setDepositeAmount(maxAmount);
+  };
+  
+  const handleMaxWithdraw = () => {
+    const maxWithdrawAmount = Math.max(tokenBalances['btc'] - 10000,0); // Assuming tokenBalances['btc'] is in satoshis
+    setWithdrawAmount(maxWithdrawAmount / 100000000); // Convert satoshis to BTC for the input field
+  };
+  
 
   return (
     <Layout>
@@ -468,11 +496,12 @@ const Bridge = () => {
                   background: 'transparent',
                   outline: 'none',
                 }} type="number"
+                  min="0"
                   value={depositeAmount}
                   onChange={handleDepositeAmountChange} />
-                <span className="ml-3 absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                <span className="ml-3 absolute inset-y-0 right-0 flex items-center pr-2 ">
                   {/* Heroicon name: solid/selector */}
-                  <p style={{ color: 'black' }}>Max</p>
+                  <p style={{ color: 'black', cursor: 'pointer' }} onClick={handleMaxDeposite}>Max</p>
                 </span>
               </button>
             </div>
@@ -489,7 +518,7 @@ const Bridge = () => {
               className="block text-sm font-medium text-gray-700"
             >
               {" "}
-              Avalible{" "}
+              Available{" "}
             </label>
 
             <p style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', }}>
@@ -599,10 +628,11 @@ const Bridge = () => {
                 }}
                   value={withdrawAmount}
                   onChange={handleWithdrawAmountChange}
+                  min="0"
                   type="number" />
-                <span className="ml-3 absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                <span className="ml-3 absolute inset-y-0 right-0 flex items-center pr-2 " >
                   {/* Heroicon name: solid/selector */}
-                  <p style={{ color: 'black' }}>Max</p>
+                  <p style={{ color: 'black', cursor: 'pointer' }} onClick={handleMaxWithdraw}>Max</p>
                 </span>
               </button>
             </div>
@@ -619,15 +649,15 @@ const Bridge = () => {
               className="block text-sm font-medium text-gray-700"
             >
               {" "}
-              Avalible{" "}
+              Available{" "}
             </label>
 
-            <p style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', }}>   
-            {tokenBalances['bmap'] ? (tokenBalances['bmap']) : '0'} BMAP       
+            <p style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', }}>
+              {tokenBalances['bmap'] ? (tokenBalances['bmap']) : '0'} BMAP
             </p>
 
 
-            
+
 
             <p style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', }}>
               {tokenBalances['btc'] ? (tokenBalances['btc'] / 100000000).toFixed(8) : '0.00000000'} BTC
@@ -637,13 +667,13 @@ const Bridge = () => {
 
           <div className="mt-2" style={{ textAlign: 'right', }}>
             <button
-            onClick={onBitmapPegOutSignAndSendMessageClick} 
-            className="mx-3" style={{
-              background: '#FF7248',
-              padding: '10px',
-              borderRadius: '10px',
-              fontSize: '17px',
-            }}>
+              onClick={onBitmapPegOutSignAndSendMessageClick}
+              className="mx-3" style={{
+                background: '#FF7248',
+                padding: '10px',
+                borderRadius: '10px',
+                fontSize: '17px',
+              }}>
               Withdraw 1 Bitmap
             </button>
             <button

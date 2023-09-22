@@ -11,6 +11,8 @@ const BitmapBridge = () => {
   const [isSelected, setIsSelected] = useState(false);
   const [selectedBitmapsItems, setSelectedBitmapsItems] = useState([]);
   const [BitmapBridgeItems, setBitmapBridgeItems] = useState([]); // 使用状态来存储从服务器获取的数据
+  const [isLoading, setIsLoading] = useState(true);
+
 
   useEffect(() => {
     const trac_base = io("https://api-testnet.trac.network");
@@ -44,6 +46,7 @@ const BitmapBridge = () => {
           };
         }));
         setBitmapBridgeItems(items);
+        setIsLoading(false); 
       }
     };
 
@@ -73,8 +76,13 @@ const BitmapBridge = () => {
   }, [selectedBitmapsItems]);
 
   const handleAddSelectedBitmap = (bitmap) => {
-    setSelectedBitmapsItems([...selectedBitmapsItems, bitmap]);
-  };
+    const isItemAlreadySelected = selectedBitmapsItems.some(selectedItem => selectedItem.id === bitmap.id); // 使用bitmap.id而不是item.id
+
+    console.log(isItemAlreadySelected);
+    if (!isItemAlreadySelected) {
+        setSelectedBitmapsItems([...selectedBitmapsItems, bitmap]);
+    }
+};
 
   const handleDeleteSelectedBitmap = (bitmap) => {
     setSelectedBitmapsItems((prevItems) =>
@@ -88,6 +96,7 @@ const BitmapBridge = () => {
         <BitmapBridgeAll
           BitmapBridgeItems={BitmapBridgeItems}
           handleAddSelectedBitmap={handleAddSelectedBitmap}
+          isLoading={isLoading}
         />
       </>
     );

@@ -25,7 +25,7 @@ const SwapAndSend = () => {
 
 
 
-  const BISON_SEQUENCER_ENDPOINT = "http://192.168.254.67:8008";
+  const BISON_SEQUENCER_ENDPOINT = "http://209.141.49.238:8008";
 
   const fetchBalanceForContract = async (contract) => {
     const url = `${contract.contractEndpoint}/balance`;
@@ -158,13 +158,17 @@ const SwapAndSend = () => {
 
   const handleAmountChange = (e) => {
     const value = e.target.value;
-    // 如果selectedTransferToken为btc，则允许小数点输入
+  
+    // Check if the value starts with a negative sign
+    if (value.startsWith('-')) return;
+  
+    // If selectedTransferToken is 'btc', allow decimal input
     if (selectedTransferToken === 'btc') {
       if (!value || /^[0-9]*\.?[0-9]*$/.test(value)) {
         setAmount(value);
       }
     } else {
-      // 对于其他tokens，只允许整数输入
+      // For other tokens, only allow integer input
       if (!value || /^[0-9]+$/.test(value)) {
         setAmount(value);
       }
@@ -276,14 +280,17 @@ const SwapAndSend = () => {
 
   const handleSwapAmountChange = (e) => {
     const value = e.target.value;
-
-    // 如果selectedSwapToken1为btc，则允许小数点输入
+  
+    // Check if the value starts with a negative sign
+    if (value.startsWith('-')) return;
+  
+    // If selectedSwapToken1 is 'btc', allow decimal input
     if (selectedSwapToken1 === 'btc') {
       if (!value || /^[0-9]*\.?[0-9]*$/.test(value)) {
         setSwapAmount(value);
       }
     } else {
-      // 对于其他tokens，只允许整数输入
+      // For other tokens, only allow integer input
       if (!value || /^[0-9]+$/.test(value)) {
         setSwapAmount(value);
       }
@@ -377,6 +384,7 @@ const SwapAndSend = () => {
       onFinish: (response) => {
         messageObj.makerSig = response;
         onSwapMessageClick(messageObj);
+        fetchContracts();
       },
       onCancel: () => alert("Swap canceled"),
     };
@@ -399,6 +407,7 @@ const SwapAndSend = () => {
       .then(response => response.json())
       .then(data => {
         alert(JSON.stringify(data));
+        fetchContracts();
       })
       .catch((error) => {
         console.error('Error:', error);
