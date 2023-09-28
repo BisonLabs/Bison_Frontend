@@ -8,16 +8,26 @@ export default function TradersView() {
   const [lineGraphData, setLineGraphData] = useState([]);
   const [timeFrame, setTimeFrame] = useState("1h");
   const [timeLabels, setTimeLabels] = useState([]);
+  const [fromAmount, setFromAmount] = useState("");
+  const [toAmount, setToAmount] = useState("");
+  const [fromToken, setFromToken] = useState("Laser");
+  const [toToken, setToToken] = useState("BTC");
+
 
 
   useEffect(() => {
-    const fetchData = () => {
+    const fetchPriceData = () => {
       fetch('http://192.168.254.80:4000/quote_history')
         .then(response => response.json())
         .then(data => {
           let aggregationFactor = 12;  // Default for 1m
           if (timeFrame === "1h") aggregationFactor = 720;
           if (timeFrame === "1d") aggregationFactor = 17280;
+
+          let maxDataPoints = 0;
+          if (timeFrame === "1m") maxDataPoints = 120;
+          if (timeFrame === "1h") maxDataPoints = 48;
+          if (timeFrame === "1d") maxDataPoints = 7;
 
           const aggregatedData = [];
           const timeLabels = [];
@@ -31,8 +41,11 @@ export default function TradersView() {
             timeLabels.push(localTime);
           }
 
-          setLineGraphData(aggregatedData);
-          setTimeLabels(timeLabels);
+          const filteredData = aggregatedData.slice(-maxDataPoints);
+          const filteredTimeLabels = timeLabels.slice(-maxDataPoints);
+
+          setLineGraphData(filteredData);
+          setTimeLabels(filteredTimeLabels);
 
           if (data.length > 0) {
             setLatestPrice(data[data.length - 1][1]);
@@ -43,14 +56,14 @@ export default function TradersView() {
         });
     };
 
-    fetchData();
-    const intervalId = setInterval(fetchData, 5000);
+    fetchPriceData();
+    const intervalId = setInterval(fetchPriceData, 5000);
     return () => clearInterval(intervalId);
   }, [timeFrame]);
 
   const series = [
     {
-      name: "TEAM A",
+      name: "Laser Price",
       type: "column",
       data: lineGraphData,
     },
@@ -98,7 +111,7 @@ export default function TradersView() {
     yaxis: {
       min: 0
     },
-    
+
     tooltip: {
       shared: true,
       intersect: false,
@@ -109,12 +122,23 @@ export default function TradersView() {
           }
           return y;
         }
+      },
+      style: {
+        fontSize: '12px',
+        colors: ['#000']  // Setting tooltip text color to black
       }
     }
   };
 
   return (
     <>
+        <style>{`
+        .apexcharts-tooltip {
+          color: black !important;
+          background-color: white !important;
+        }
+      `}</style>
+      
       <Layout>
         <div className="grid grid-cols-1 lg:grid-cols-5 2xl:grid-cols-5 gap-10">
           <div className="col-span-3">
@@ -186,11 +210,12 @@ export default function TradersView() {
                     style={{
                       margin: "0px 10px",
                       border: "1px solid #787676",
-                      color: "#787676",
+                      color: timeFrame === "1m" ? "black" : "#787676",  // Changed
                       padding: "0px 22px",
                       borderRadius: "19px",
                       fontSize: "15px",
                       cursor: "pointer",
+                      backgroundColor: timeFrame === "1m" ? "blue" : "transparent",  // Changed
                     }}
                   >
                     {" "}
@@ -200,13 +225,13 @@ export default function TradersView() {
                     onClick={() => setTimeFrame("1h")}
                     style={{
                       margin: "0px 10px",
-                      border: "1px solid blue",
-                      color: "black",
+                      border: "1px solid #787676",
+                      color: timeFrame === "1h" ? "black" : "#787676",  // Changed
                       padding: "0px 22px",
                       borderRadius: "19px",
                       fontSize: "15px",
                       cursor: "pointer",
-                      backgroundColor: "blue",
+                      backgroundColor: timeFrame === "1h" ? "blue" : "transparent",  // Changed
                     }}
                   >
                     {" "}
@@ -217,17 +242,19 @@ export default function TradersView() {
                     style={{
                       margin: "0px 10px",
                       border: "1px solid #787676",
-                      color: "#787676",
+                      color: timeFrame === "1d" ? "black" : "#787676",  // Changed
                       padding: "0px 22px",
                       borderRadius: "19px",
                       fontSize: "15px",
                       cursor: "pointer",
+                      backgroundColor: timeFrame === "1d" ? "blue" : "transparent",  // Changed
                     }}
                   >
                     {" "}
                     1d{" "}
                   </p>
                 </div>
+
               </div>
 
               <div id="chart">
@@ -256,7 +283,7 @@ export default function TradersView() {
                   style={{
                     width: "100%",
                     height: "100%",
-                    color: "white",
+                    color: "black",
                     border: "none",
                     background: "transparent",
                     outline: "none",
@@ -296,7 +323,7 @@ export default function TradersView() {
                   style={{
                     width: "100%",
                     height: "100%",
-                    color: "white",
+                    color: "black",
                     border: "none",
                     background: "transparent",
                     outline: "none",
