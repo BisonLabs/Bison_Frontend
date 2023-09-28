@@ -5,6 +5,8 @@ import Bridge from "./pages/Bridge";
 import SwapAndSend from "./pages/SwapAndSend";
 import NetworkOverview from "./pages/NetworkOverview";
 import BitmapBridge from "./pages/BitmapBridge";
+import TradersView from "./pages/TradersView/TradersView";
+
 
 function App() {
   return (
@@ -16,6 +18,7 @@ function App() {
           <Route path="/bitmap-bridge" element={<BitmapBridge />} />
           <Route path="/bitmap-bridge/bridiging" element={<SwapBridge />} />
           <Route path="/network-overview" element={<NetworkOverview />} />
+          <Route path="/traders_view" element={<TradersView />} />
           <Route path="*" element={<Navigate to="/bridge" />} />
         </Routes>
       </div>
