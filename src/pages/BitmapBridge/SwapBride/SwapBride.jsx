@@ -33,7 +33,6 @@ const SwapBridge = (props) => {
                 setRecipientAddress(bmapContract.contractAddr);
             }
 
-            // ... rest of the fetchContracts function
         } catch (error) {
             console.error('Error:', error);
         }

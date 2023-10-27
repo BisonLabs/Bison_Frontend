@@ -28,7 +28,7 @@ const SwapAndSend = () => {
 
 
 
-  const BISON_SEQUENCER_ENDPOINT = "http://209.141.49.238:8008";
+  const BISON_SEQUENCER_ENDPOINT = "http://127.0.0.1:8008";
 
   const fetchBalanceForContract = async (contract) => {
     const url = `${contract.contractEndpoint}/balance`;
