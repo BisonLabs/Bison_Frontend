@@ -138,7 +138,6 @@ const Layout = ({ children }) => {
     { path: "/bridge", label: "Bridge" },
     { path: "/swap-and-send", label: "Swap And Send" },
     { path: "/bitmap-bridge", label: "Bitmap Bridge" },
-    { path: "/network-overview", label: "Network Overview" },
     { path: "/pipe-bridge", label: "Pipe Bridge" }
 
     
@@ -164,7 +163,7 @@ const Layout = ({ children }) => {
       <div className="flex justify-between px-5 py-10">
         <div className="ml-10 flex gap-4 items-center">
           <img
-            src="/img/menuImages/sidebarimg.png"
+          src="/img/menuImages/sidebarImg.png" 
             alt=""
             width={54}
             className="rounded-full"

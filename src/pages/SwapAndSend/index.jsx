@@ -28,7 +28,7 @@ const SwapAndSend = () => {
 
 
 
-  const BISON_SEQUENCER_ENDPOINT = "http://127.0.0.1:8008";
+  const BISON_SEQUENCER_ENDPOINT = "http://209.141.49.238:8008/";
 
   const fetchBalanceForContract = async (contract) => {
     const url = `${contract.contractEndpoint}/balance`;
@@ -71,7 +71,7 @@ const SwapAndSend = () => {
 
     // 如果tick是btc,那么amount从btc转化成sats
     let transferAmount = amount;
-    if (selectedTransferToken === 'btc') {
+    if (selectedTransferToken === 'btc' || selectedTransferToken === 'pipe') {
       transferAmount = Math.round(parseFloat(amount) * 100000000); // 1 BTC = 100,000,000 sats
     } else {
       transferAmount = parseInt(amount, 10);
@@ -161,12 +161,12 @@ const SwapAndSend = () => {
 
   const handleAmountChange = (e) => {
     const value = e.target.value;
-  
+
     // Check if the value starts with a negative sign
     if (value.startsWith('-')) return;
-  
+
     // If selectedTransferToken is 'btc', allow decimal input
-    if (selectedTransferToken === 'btc') {
+    if (selectedTransferToken === 'btc' || selectedTransferToken === 'pipe') {
       if (!value || /^[0-9]*\.?[0-9]*$/.test(value)) {
         setAmount(value);
       }
@@ -235,7 +235,7 @@ const SwapAndSend = () => {
 
       let adjustedSwapAmount = swapAmount;
 
-      if (selectedSwapToken1.toLowerCase() === "btc") {
+      if (selectedSwapToken1.toLowerCase() === "btc" || selectedSwapToken1.toLowerCase() === "pipe") {
         adjustedSwapAmount = Math.round(swapAmount * 100000000); // 1 btc = 100,000,000 sats
       }
 
@@ -283,12 +283,12 @@ const SwapAndSend = () => {
 
   const handleSwapAmountChange = (e) => {
     const value = e.target.value;
-  
+
     // Check if the value starts with a negative sign
     if (value.startsWith('-')) return;
-  
+
     // If selectedSwapToken1 is 'btc', allow decimal input
-    if (selectedSwapToken1 === 'btc') {
+    if (selectedSwapToken1 === 'btc' || selectedSwapToken1 === 'pipe') {
       if (!value || /^[0-9]*\.?[0-9]*$/.test(value)) {
         setSwapAmount(value);
       }
@@ -306,7 +306,7 @@ const SwapAndSend = () => {
 
     let adjustedSwapAmount = swapAmount;
 
-    if (selectedSwapToken1.toLowerCase() === "btc" ) {
+    if (selectedSwapToken1.toLowerCase() === "btc" || selectedSwapToken1.toLowerCase() === 'pipe') {
       adjustedSwapAmount = Math.round(swapAmount * 100000000); // 1 btc = 100,000,000 sats
     }
     const amount1 = parseInt(adjustedSwapAmount);
@@ -371,7 +371,7 @@ const SwapAndSend = () => {
         return;
       }
     }
-    
+
     // 更新messageObj以包含gas数据
     messageObj.gas_estimated = gasData.gas_estimated;
     messageObj.gas_estimated_hash = gasData.gas_estimated_hash;
@@ -427,86 +427,86 @@ const SwapAndSend = () => {
     setSwapAmount("");
   }, [selectedSwapToken1]);
 
-//This part of code is used to display total value
-const fetchBtcRate = async () => {
-  try {
-    const response = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd");
-    const data = await response.json();
-    setBtcRate(data.bitcoin.usd);
-  } catch (error) {
-    console.error("Error fetching BTC rate:", error);
-  }
-};
-
-useEffect(() => {
-  fetchBtcRate();
-  const interval = setInterval(() => {
-    fetchBtcRate();
-  }, 60000); // 每 60 秒更新一次
-
-  return () => clearInterval(interval); // 清除定时器
-}, []);
-
-const fetchTotalValueInUSD = async () => {
-  let totalValueInBTC = 0;
-
-  // 添加 BTC 的价值
-  totalValueInBTC += (tokenBalances['btc'] || 0) / 100000000;
-
-  // 对于每一个非 BTC 的代币，获取其相对于 BTC 的价值
-  for (const contract of contracts) {
-    if (contract.tick === 'btc') continue;
-
-    const contract1 = contract;
-    const contract2 = contracts.find(c => c.tick === 'btc');
-
-    if (!contract1 || !contract2) continue;
-
-    const contractAddress1 = contract1.contractAddr;
-    const contractAddress2 = contract2.contractAddr;
-
-    const swapContractTick = `${contract.tick}-btc_SWAP`;
-    const swapContract = swapContracts.find(s => s.tick === swapContractTick);
-
-    if (!swapContract) continue;
-
-    const endpoint = `${swapContract.contractEndpoint}/quote`;
-
+  //This part of code is used to display total value
+  const fetchBtcRate = async () => {
     try {
-      const response = await fetch(endpoint, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          tick1: contract.tick,
-          tick2: 'btc',
-          contractAddress1: contractAddress1,
-          contractAddress2: contractAddress2,
-          amount1: tokenBalances[contract.tick] || 0,
-        }),
-      });
-
+      const response = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd");
       const data = await response.json();
-      const btcEquivalent = data.amount2 / 100000000;
-
-      totalValueInBTC += btcEquivalent;
-
+      setBtcRate(data.bitcoin.usd);
     } catch (error) {
-      console.error("Error fetching quote:", error);
+      console.error("Error fetching BTC rate:", error);
     }
-  }
+  };
 
-  // 用 BTC 的汇率转换为美元
-  const totalValueInUSD = totalValueInBTC * btcRate;
+  useEffect(() => {
+    fetchBtcRate();
+    const interval = setInterval(() => {
+      fetchBtcRate();
+    }, 60000); // 每 60 秒更新一次
 
-  // 更新状态
-  setTotalValue(totalValueInUSD);
-};
+    return () => clearInterval(interval); // 清除定时器
+  }, []);
 
-useEffect(() => {
-  fetchTotalValueInUSD();
-}, [tokenBalances]);  // 当 tokenBalances 变动时，重新计算总价值
+  const fetchTotalValueInUSD = async () => {
+    let totalValueInBTC = 0;
+
+    // 添加 BTC 的价值
+    totalValueInBTC += (tokenBalances['btc'] || 0) / 100000000;
+
+    // 对于每一个非 BTC 的代币，获取其相对于 BTC 的价值
+    for (const contract of contracts) {
+      if (contract.tick === 'btc') continue;
+
+      const contract1 = contract;
+      const contract2 = contracts.find(c => c.tick === 'btc');
+
+      if (!contract1 || !contract2) continue;
+
+      const contractAddress1 = contract1.contractAddr;
+      const contractAddress2 = contract2.contractAddr;
+
+      const swapContractTick = `${contract.tick}-btc_SWAP`;
+      const swapContract = swapContracts.find(s => s.tick === swapContractTick);
+
+      if (!swapContract) continue;
+
+      const endpoint = `${swapContract.contractEndpoint}/quote`;
+
+      try {
+        const response = await fetch(endpoint, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            tick1: contract.tick,
+            tick2: 'btc',
+            contractAddress1: contractAddress1,
+            contractAddress2: contractAddress2,
+            amount1: tokenBalances[contract.tick] || 0,
+          }),
+        });
+
+        const data = await response.json();
+        const btcEquivalent = data.amount2 / 100000000;
+
+        totalValueInBTC += btcEquivalent;
+
+      } catch (error) {
+        console.error("Error fetching quote:", error);
+      }
+    }
+
+    // 用 BTC 的汇率转换为美元
+    const totalValueInUSD = totalValueInBTC * btcRate;
+
+    // 更新状态
+    setTotalValue(totalValueInUSD);
+  };
+
+  useEffect(() => {
+    fetchTotalValueInUSD();
+  }, [tokenBalances]);  // 当 tokenBalances 变动时，重新计算总价值
 
   return (
     <Layout>
@@ -607,7 +607,7 @@ useEffect(() => {
                 justifyContent: 'flex-start',
               }}
             >
-              {selectedSwapToken2.toLowerCase() === "btc" ? (amount2 / 100000000).toFixed(8) : amount2}
+              {selectedSwapToken2.toLowerCase() === "btc" || selectedSwapToken2.toLowerCase() === "pipe" ? (amount2 / 100000000).toFixed(8) : amount2}
             </div>
 
             <select style={{
@@ -758,7 +758,7 @@ useEffect(() => {
                       </thead>
                       <tbody>
                         {contracts.map((contract, index) => {
-                          const balance = contract.tick === 'btc'
+                          const balance = (contract.tick === 'btc' || contract.tick === 'pipe')
                             ? parseFloat((tokenBalances[contract.tick] || 0) / 100000000).toFixed(8)
                             : tokenBalances[contract.tick] || 0;
 

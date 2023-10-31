@@ -17,7 +17,7 @@ export default function PipeBridge() {
   });
 
   const [isClicked, setIsClicked] = useState(false);
-  const [BISON_SEQUENCER_ENDPOINT, setBISON_SEQUENCER_ENDPOINT] = useState("http://127.0.0.1:8008/");
+  const [BISON_SEQUENCER_ENDPOINT, setBISON_SEQUENCER_ENDPOINT] = useState("http://209.141.49.238:8008/");
   const [PIPE_endpoint, setPIPE_endpoint] = useState('');
   const { ordinalsAddress, paymentAddress } = useWallet();
   const [pipeResponse, setPipeResponse] = useState(null);
@@ -276,7 +276,7 @@ export default function PipeBridge() {
         <div className="grid grid-cols-1 lg:grid-cols-5 2xl:grid-cols-5 gap-10">
 
           <div className="col-span-5">
-            <XBox isBackground={true} height={isClicked ? 900 : 400}>
+            <XBox isBackground={true} height={isClicked ? 500 : 400}>
               <h3 className="">Deposit</h3>
               <div
                 style={{
@@ -416,97 +416,80 @@ export default function PipeBridge() {
 
 
           </div>
-          <XBox ixBackground={true} >
-            <h3>Withdraw</h3>
+          <div className="col-span-5">
 
-
-            <div className='mt-5'>
-              <label
-                style={{ color: 'white', }}
-                id="listbox-label"
-                className="block text-sm font-medium text-gray-700"
+          <XBox isBackground={true} height={isClicked ? 500 : 400}>
+              <h3 className="">Withdraw</h3>
+              <div
+                style={{
+                  height: "55px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "",
+                  marginTop: "30px",
+                  backgroundColor: "#424242",
+                  padding: "0px 21px",
+                  borderRadius: "9px",
+                }}
               >
-                {" "}
-                Asset{" "}
-              </label>
-              <div className="mt-1 relative">
-                <button
-                  style={{ height: "60px" }}
-                  type="button"
-                  className="relative w-full bg-white border border-gray-300 rounded-md shadow-sm pl-3 pr-10 py-2 text-left cursor-default focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  aria-haspopup="listbox"
-                  aria-expanded="true"
-                  aria-labelledby="listbox-label"
-                >
-                  <span className="flex items-center">
 
-                    <span style={{ color: 'black', }} className="ml-3 block truncate"> PIPE </span>
-                  </span>
-                  <span className="ml-3 absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-                    {/* Heroicon name: solid/selector */}
-                    <svg
-                      className="h-5 w-5 text-gray-400"
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                      aria-hidden="true"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M10 3a1 1 0 01.707.293l3 3a1 1 0 01-1.414 1.414L10 5.414 7.707 7.707a1 1 0 01-1.414-1.414l3-3A1 1 0 0110 3zm-3.707 9.293a1 1 0 011.414 0L10 14.586l2.293-2.293a1 1 0 011.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </span>
-                </button>
-              </div>
-            </div>
-
-            <div className='mt-5'>
-              <label
-                style={{ color: 'white', }}
-                id="listbox-label"
-                className="block text-sm font-medium text-gray-700"
-              >
-                {" "}
-                Amount{" "}
-              </label>
-              <div className="mt-1 relative">
-                <button
-                  style={{ height: "60px" }}
-                  type="button"
-                  className="relative w-full bg-white border border-gray-300 rounded-md shadow-sm pl-3 pr-10 py-2 text-left cursor-default focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  aria-haspopup="listbox"
-                  aria-expanded="true"
-                  aria-labelledby="listbox-label"
-                >
-                  <input style={{
-                    width: '100%',
-                    height: '100%',
-                    color: 'black',
-                    border: 'none',
-                    background: 'transparent',
-                    outline: 'none',
+                <select
+                  value={data.asset}
+                  onChange={handleFormChange}
+                  style={{
+                    width: "100%",
+                    backgroundColor: "#424242",
+                    padding: "1px 15px",
+                    borderRadius: "6px",
+                    border: "none",
                   }}
-                    value={withdrawAmount}
-                    onChange={handleWithdrawAmountChange}
-                    min="0"
-                    type="number" />
-                  <span className="ml-3 absolute inset-y-0 right-0 flex items-center pr-2 " >
-                    {/* Heroicon name: solid/selector */}
-                    <p style={{ color: 'black', cursor: 'pointer' }}></p>
-                  </span>
-                </button>
+                  name="asset"
+                >
+                  <option value="">PIPE</option>
+                </select>
               </div>
-            </div>
 
-            <div style={{
+              <div
+                style={{
+                  height: "55px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  marginTop: "10px",
+                  backgroundColor: "#424242",
+                  padding: "0px 21px",
+                  borderRadius: "9px",
+                }}
+              >
+                <input
+                  value={data.amount}
+                  onChange={handleFormChange}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    color: "white",
+                    border: "none",
+                    background: "transparent",
+                    outline: "none",
+                  }}
+                  placeholder="Amount"
+                  type="text"
+                  name="amount"
+
+
+                />
+
+                <p>
+                  {data.asset !== "Asset" && data.asset}
+                </p>
+              </div>
+              <div style={{
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
             }} className="mt-5">
-              <label
-                style={{ color: 'white', }}
+            <label
+                style={{ color: 'white', fontSize: '24px' }} // Here's where I've increased the font size.
                 id="listbox-label"
                 className="block text-sm font-medium text-gray-700"
               >
@@ -527,7 +510,7 @@ export default function PipeBridge() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              marginTop: '30px',
+              marginTop: '10px',
               backgroundColor: '#424242',
               padding: '0px 21px',
               borderRadius: '9px',
@@ -548,22 +531,38 @@ export default function PipeBridge() {
 
               />
             </div>
+              <div style={{ marginTop: "60px", textAlign: 'right', }}>
+                <button
+                  onClick={() => { setIsClicked(false) }}
+                  style={{
+                    margin: '0px 10px',
+                    background: "white",
+                    color: 'black',
+                    padding: "13px",
+                    borderRadius: "10px",
+
+                  }} >
+                  Cancel
+                </button>
+                <button
+                  onClick={onPegOutSignAndSendMessageClick}
+                  style={{
+                    background: "#ff7248",
+                    padding: "13px",
+                    borderRadius: "10px",
+                  }}
+                >
+                  Confirm Withdraw
+                </button>
+              </div>
 
 
-            <div className="mt-2" style={{ textAlign: 'right', }}>
 
-              <button
-                onClick={onPegOutSignAndSendMessageClick}
-                style={{
-                  background: '#FF7248',
-                  padding: '10px',
-                  borderRadius: '10px',
-                  fontSize: '17px',
-                }}>
-                Confirm Withdraw
-              </button>
+
+
+            </XBox>
             </div>
-          </XBox>
+
         </div>
       </Layout>
     </>
