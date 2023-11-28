@@ -4,7 +4,7 @@ import XBox from "../../components/XBox";
 import { useState } from "react";
 import { useWallet } from "../../WalletContext";
 import { useEffect } from "react";
-import { getAddress, signMessage, sendBtcTransaction } from "sats-connect";
+import { signMessage } from "sats-connect";
 
 
 

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import BitmapBridgeAll from "./SwapBride/BitmapBridge";
 import SwapBridge from "./SwapBride/SwapBride";
 import { useWallet } from "../../WalletContext";
-import { getAddress, signMessage, sendBtcTransaction } from "sats-connect";
+import { getAddress} from "sats-connect";
 import io from "socket.io-client"; // 引入Socket.io客户端库
 
 

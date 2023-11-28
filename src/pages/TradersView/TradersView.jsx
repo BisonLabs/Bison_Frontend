@@ -3,7 +3,7 @@ import Layout from "../../components/Layout";
 import XBox from "../../components/XBox";
 import ReactApexChart from "react-apexcharts";
 import { useWallet } from "../../WalletContext";
-import { getAddress, signMessage, sendBtcTransaction } from "sats-connect";
+import {  signMessage } from "sats-connect";
 
 
 

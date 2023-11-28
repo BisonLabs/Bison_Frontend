@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import Layout from "../../components/Layout";
 import XBox from "../../components/XBox";
 import { useWallet } from "../../WalletContext";
-import { getAddress, signMessage, sendBtcTransaction } from "sats-connect";
+import { signMessage } from "sats-connect";
 
 
 const SwapAndSend = () => {

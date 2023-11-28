@@ -7,7 +7,7 @@ import {
   faArrowRight,
 } from "@fortawesome/free-solid-svg-icons";
 
-import { getAddress, signMessage, sendBtcTransaction } from "sats-connect";
+import { getAddress } from "sats-connect";
 import { useWallet } from "../WalletContext";
 
 
