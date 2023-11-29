@@ -119,7 +119,7 @@ const Bridge = () => {
         network: {
           type: "Testnet",
         },
-        address: ordinalsAddress,
+        address: paymentAddress,
         message: JSON.stringify(pegInMessageObj),
       },
       onFinish: (response) => {
