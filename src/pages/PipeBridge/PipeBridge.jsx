@@ -18,7 +18,7 @@ export default function PipeBridge() {
 
   const [isClicked, setIsClicked] = useState(false);
   const [BISON_SEQUENCER_ENDPOINT, setBISON_SEQUENCER_ENDPOINT] = useState("http://209.141.49.238:8008/");
-  const [PIPE_endpoint, setPIPE_endpoint] = useState('');
+  const [PIPE_endpoint, setPIPE_endpoint] = useState('http://209.141.49.238:5077/');
   const { ordinalsAddress, paymentAddress } = useWallet();
   const [pipeResponse, setPipeResponse] = useState(null);
   const [isDepositConfirmed, setIsDepositConfirmed] = useState(false);
