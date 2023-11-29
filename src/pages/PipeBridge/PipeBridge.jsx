@@ -107,10 +107,10 @@ export default function PipeBridge() {
 
   const checkBalance = async () => {
     let responseData; // 在这里定义
-    if (!pipeResponse || !pipeResponse.hash) return; // 如果没有 pipeResponse 或 hash，则返回
+    if (!pipeResponse || !pipeResponse.address) return; // 如果没有 pipeResponse 或 hash，则返回
 
     const payload = {
-      hash: pipeResponse.hash
+      addr: pipeResponse.address
     };
 
     const requestOptions = {
