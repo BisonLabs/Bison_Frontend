@@ -6,7 +6,7 @@ import { signMessage } from "sats-connect";
 
 
 const SwapAndSend = () => {
-  const { ordinalsAddress ,BISON_SEQUENCER_ENDPOINT} = useWallet(); // 使用useWallet钩子
+  const { ordinalsAddress ,BISON_SEQUENCER_ENDPOINT,NETWORK} = useWallet(); // 使用useWallet钩子
   const [contracts, setContracts] = useState([]);
   const [tokenBalances, setTokenBalances] = useState({});
   const [receiptAddress, setReceiptAddress] = useState("");
@@ -118,7 +118,7 @@ const SwapAndSend = () => {
     const signMessageOptions = {
       payload: {
         network: {
-          type: "Testnet",
+          type: NETWORK,
         },
         address: ordinalsAddress,
         message: JSON.stringify(messageObj),
@@ -374,7 +374,7 @@ const SwapAndSend = () => {
     const signMessageOptions = {
       payload: {
         network: {
-          type: "Testnet",
+          type: NETWORK,
         },
         address: ordinalsAddress,
         message: JSON.stringify(messageObj),

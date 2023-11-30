@@ -13,9 +13,10 @@ export const WalletProvider = ({ children }) => {
     const [paymentPublicKey, setPaymentPublicKey] = useState("");
 
 
-    const BISON_SEQUENCER_ENDPOINT = useState("http://209.141.49.238:8008/");
-    const btcContractEndpoint = useState("http://209.141.49.238:8008/");
-    const PIPE_endpoint = useState("http://209.141.49.238:5077/");
+    const [BISON_SEQUENCER_ENDPOINT,setBISON_SEQUENCER_ENDPOINT] = useState("http://209.141.49.238:8008/");
+    const [btcContractEndpoint,setBtcContractEndpoint] = useState("http://209.141.49.238:8008/");
+    const [PIPE_endpoint,setPIPE_endpoint] = useState("http://209.141.49.238:5077/");
+    const [NETWORK,setNetwork] = useState("Testnet");
 
     return (
         <WalletContext.Provider value={{
@@ -23,8 +24,10 @@ export const WalletProvider = ({ children }) => {
             paymentAddress, setPaymentAddress,
             ordinalsPublicKey, setOrdinalsPublicKey,
             paymentPublicKey, setPaymentPublicKey,
-            BISON_SEQUENCER_ENDPOINT,btcContractEndpoint,
-            PIPE_endpoint
+            BISON_SEQUENCER_ENDPOINT,setBISON_SEQUENCER_ENDPOINT,
+            btcContractEndpoint,setBtcContractEndpoint,
+            PIPE_endpoint,setPIPE_endpoint,
+            NETWORK,setNetwork,
         }}>
             {children}
         </WalletContext.Provider>

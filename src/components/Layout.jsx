@@ -53,7 +53,8 @@ const Layout = ({ children }) => {
     ordinalsAddress, setOrdinalsAddress,
     paymentAddress, setPaymentAddress,
     ordinalsPublicKey, setOrdinalsPublicKey,
-    paymentPublicKey, setPaymentPublicKey
+    paymentPublicKey, setPaymentPublicKey,
+    NETWORK,setNetwork,
   } = useWallet();
 
   const onConnectClick = async () => {
@@ -62,7 +63,7 @@ const Layout = ({ children }) => {
         purposes: ["ordinals", "payment"],
         message: "Address for receiving Ordinals",
         network: {
-          type: "Testnet",
+          type: NETWORK,
         },
       },
       onFinish: async (response) => {

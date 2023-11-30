@@ -6,7 +6,7 @@ import { getAddress, signMessage, sendBtcTransaction } from "sats-connect";
 
 
 const Bridge = () => {
-  const { ordinalsAddress, paymentAddress ,BISON_SEQUENCER_ENDPOINT,btcContractEndpoint} = useWallet(); // 使用useWallet钩子
+  const { NETWORK,ordinalsAddress, paymentAddress ,BISON_SEQUENCER_ENDPOINT,btcContractEndpoint,setBtcContractEndpoint} = useWallet(); // 使用useWallet钩子
   const [btcBalance, setBtcBalance] = useState(0); // 初始化BTC余额为0
   const [contracts, setContracts] = useState([]);
   const [depositeAmount, setDepositeAmount] = useState(0);
@@ -40,7 +40,11 @@ const Bridge = () => {
 
   const fetchBTCSum = async (Address) => {
     try {
-      const response = await fetch(`https://mempool.space/testnet/api/address/${Address}`);
+      let  url=`https://mempool.space/testnet/api/address/${Address}`
+      if (NETWORK == 'Testnet') {
+        url = `https://mempool.space/api/address/${Address}`
+      }
+      const response = await fetch(url);
       const data = await response.json();
       const btcBalance = (data.chain_stats.funded_txo_sum - data.chain_stats.spent_txo_sum) / 100000000; // Converting satoshis to BTC
       setBtcBalance(btcBalance);
@@ -115,7 +119,7 @@ const Bridge = () => {
     const signMessageOptions = {
       payload: {
         network: {
-          type: "Testnet",
+          type: NETWORK,
         },
         address: paymentAddress,
         message: JSON.stringify(pegInMessageObj),
@@ -176,7 +180,7 @@ const Bridge = () => {
     const sendBtcOptions = {
       payload: {
         network: {
-          type: "Testnet",
+          type: NETWORK,
         },
         recipients: [
           {
@@ -243,7 +247,7 @@ const Bridge = () => {
     const signMessageOptions = {
       payload: {
         network: {
-          type: "Testnet",
+          type: NETWORK,
         },
         address: ordinalsAddress,
         message: JSON.stringify(pegOutMessageObj),
@@ -367,7 +371,7 @@ const Bridge = () => {
     const signMessageOptions = {
       payload: {
         network: {
-          type: "Testnet",
+          type: NETWORK,
         },
         address: ordinalsAddress,
         message: JSON.stringify(pegOutMessageObj),

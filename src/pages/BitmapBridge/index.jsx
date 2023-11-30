@@ -7,7 +7,7 @@ import io from "socket.io-client"; // 引入Socket.io客户端库
 
 
 const BitmapBridge = () => {
-  const { ordinalsAddress, paymentAddress } = useWallet();
+  const { ordinalsAddress, paymentAddress ,NETWORK} = useWallet();
   const [isSelected, setIsSelected] = useState(false);
   const [selectedBitmapsItems, setSelectedBitmapsItems] = useState([]);
   const [BitmapBridgeItems, setBitmapBridgeItems] = useState([]); // 使用状态来存储从服务器获取的数据
@@ -15,13 +15,20 @@ const BitmapBridge = () => {
 
 
   useEffect(() => {
-    const trac_base = io("https://api-testnet.trac.network");
+    let trac_base = io("https://api.trac.network");
+    if (NETWORK == 'Testnet'){
+      trac_base = io("https://api-testnet.trac.network");
+    }
 
     const handleResponse = async (msg) => {
       if (msg.func === "walletLight") {
         const items = await Promise.all(msg.result.map(async id => {
           const shortId = id.slice(0, 4) + '...' + id.slice(-6);
-          const inscriptionURL = `https://testnet.ordinals.com/inscription/${id}`;
+          let inscriptionURL = `https://ordinals.com/inscription/${id}`;
+          if (NETWORK == 'Testnet'){
+            inscriptionURL = `https://testnet.ordinals.com/inscription/${id}`;
+          }
+            
           const response = await fetch(inscriptionURL);
           const htmlContent = await response.text();
 
@@ -33,7 +40,11 @@ const BitmapBridge = () => {
           const outputValueMatch = htmlContent.match(/<dt>output value<\/dt>\s+<dd>([^<]+)<\/dd>/);
           const outputValue = outputValueMatch ? parseInt(outputValueMatch[1], 10) : null;
 
-          const contentURL = `https://testnet.ordinals.com/content/${id}`;
+          let  contentURL = `https://ordinals.com/content/${id}`;
+          if (NETWORK == 'Testnet'){
+            contentURL = `https://testnet.ordinals.com/content/${id}`;
+          }
+            
           const contentResponse = await fetch(contentURL);
           const name = await contentResponse.text();
 

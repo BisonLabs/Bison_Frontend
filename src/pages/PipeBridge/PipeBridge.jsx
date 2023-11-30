@@ -6,8 +6,6 @@ import { useWallet } from "../../WalletContext";
 import { useEffect } from "react";
 import { signMessage } from "sats-connect";
 
-
-
 export default function PipeBridge() {
 
 
@@ -17,7 +15,7 @@ export default function PipeBridge() {
   });
 
   const [isClicked, setIsClicked] = useState(false);
-  const { ordinalsAddress, paymentAddress,PIPE_endpoint,BISON_SEQUENCER_ENDPOINT} = useWallet();
+  const { ordinalsAddress, paymentAddress,PIPE_endpoint,setPIPE_endpoint,BISON_SEQUENCER_ENDPOINT,NETWORK} = useWallet();
   const [pipeResponse, setPipeResponse] = useState(null);
   const [isDepositConfirmed, setIsDepositConfirmed] = useState(false);
   const [remainingTime, setRemainingTime] = useState(null);
@@ -233,7 +231,7 @@ export default function PipeBridge() {
     const signMessageOptions = {
       payload: {
         network: {
-          type: "Testnet",
+          type: NETWORK,
         },
         address: ordinalsAddress,
         message: JSON.stringify(pegOutMessageObj),
