@@ -12,7 +12,7 @@ export default function TradersView() {
   const [lineGraphData, setLineGraphData] = useState([]);
   const [timeFrame, setTimeFrame] = useState("1h");
   const [timeLabels, setTimeLabels] = useState([]);
-  const { ordinalsAddress } = useWallet(); // 使用useWallet钩子
+  const { ordinalsAddress,BISON_SEQUENCER_ENDPOINT } = useWallet(); // 使用useWallet钩子
   const [contracts, setContracts] = useState([]);
   const [tokenBalances, setTokenBalances] = useState({});
   const [selectedSwapToken1, setSelectedSwapToken1] = useState("btc");
@@ -24,7 +24,6 @@ export default function TradersView() {
   const [swapAmount, setSwapAmount] = useState("");
   const [amount2, setAmount2] = useState("");
   const [quote, setQuote] = useState(null);
-  const BISON_SEQUENCER_ENDPOINT = "http://209.141.49.238:8008";
 
 
 

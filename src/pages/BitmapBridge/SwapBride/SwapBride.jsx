@@ -17,8 +17,7 @@ const SwapBridge = (props) => {
     const selectedBitmapsItems = props.selectedBitmapsItems
     const handleAddSelectedBitmap = props.handleAddSelectedBitmap
     const handleDeleteSelectedBitmap = props.handleDeleteSelectedBitmap
-    const { ordinalsAddress, paymentAddress, ordinalsPublicKey } = useWallet();
-    const [BISON_SEQUENCER_ENDPOINT, setBISON_SEQUENCER_ENDPOINT] = useState("http://209.141.49.238:8008/");
+    const { ordinalsAddress, paymentAddress, ordinalsPublicKey ,BISON_SEQUENCER_ENDPOINT} = useWallet();
     const [recipientAddress, setRecipientAddress] = useState("");
     const [swapContracts, setSwapContracts] = useState([]);
 

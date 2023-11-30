@@ -6,16 +6,14 @@ import { getAddress, signMessage, sendBtcTransaction } from "sats-connect";
 
 
 const Bridge = () => {
-  const { ordinalsAddress, paymentAddress } = useWallet(); // 使用useWallet钩子
+  const { ordinalsAddress, paymentAddress ,BISON_SEQUENCER_ENDPOINT,btcContractEndpoint} = useWallet(); // 使用useWallet钩子
   const [btcBalance, setBtcBalance] = useState(0); // 初始化BTC余额为0
   const [contracts, setContracts] = useState([]);
-  const [BISON_SEQUENCER_ENDPOINT, setBISON_SEQUENCER_ENDPOINT] = useState("http://209.141.49.238:8008/");
   const [depositeAmount, setDepositeAmount] = useState(0);
   const [withdrawAmount, setWithdrawAmount] = useState(0);
   const [tokenBalances, setTokenBalances] = useState({});
   const [bBTCAmount, setBBTCAmount] = useState(0);
   const [peginsData, setPeginsData] = useState([]);
-  const [btcContractEndpoint, setBtcContractEndpoint] = useState("http://209.141.49.238:5005/");
   const [pegOutsData, setPegOutsData] = useState([]);
 
 
