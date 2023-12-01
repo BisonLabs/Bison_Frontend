@@ -2,11 +2,11 @@ import React, { useState, useEffect } from "react";
 import Layout from "../../components/Layout";
 import XBox from "../../components/XBox";
 import { useWallet } from "../../WalletContext";
-import { getAddress, signMessage, sendBtcTransaction } from "sats-connect";
+import { signMessage } from "sats-connect";
 
 
 const SwapAndSend = () => {
-  const { ordinalsAddress } = useWallet(); // 使用useWallet钩子
+  const { ordinalsAddress ,BISON_SEQUENCER_ENDPOINT,NETWORK} = useWallet(); // 使用useWallet钩子
   const [contracts, setContracts] = useState([]);
   const [tokenBalances, setTokenBalances] = useState({});
   const [receiptAddress, setReceiptAddress] = useState("");
@@ -24,11 +24,6 @@ const SwapAndSend = () => {
   const [btcRate, setBtcRate] = useState(0);
   const [totalValue, setTotalValue] = useState(0);
 
-
-
-
-
-  const BISON_SEQUENCER_ENDPOINT = "http://209.141.49.238:8008/";
 
   const fetchBalanceForContract = async (contract) => {
     const url = `${contract.contractEndpoint}/balance`;
@@ -123,7 +118,7 @@ const SwapAndSend = () => {
     const signMessageOptions = {
       payload: {
         network: {
-          type: "Testnet",
+          type: NETWORK,
         },
         address: ordinalsAddress,
         message: JSON.stringify(messageObj),
@@ -379,7 +374,7 @@ const SwapAndSend = () => {
     const signMessageOptions = {
       payload: {
         network: {
-          type: "Testnet",
+          type: NETWORK,
         },
         address: ordinalsAddress,
         message: JSON.stringify(messageObj),

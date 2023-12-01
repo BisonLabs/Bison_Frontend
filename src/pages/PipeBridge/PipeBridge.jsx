@@ -4,9 +4,7 @@ import XBox from "../../components/XBox";
 import { useState } from "react";
 import { useWallet } from "../../WalletContext";
 import { useEffect } from "react";
-import { getAddress, signMessage, sendBtcTransaction } from "sats-connect";
-
-
+import { signMessage } from "sats-connect";
 
 export default function PipeBridge() {
 
@@ -17,9 +15,7 @@ export default function PipeBridge() {
   });
 
   const [isClicked, setIsClicked] = useState(false);
-  const [BISON_SEQUENCER_ENDPOINT, setBISON_SEQUENCER_ENDPOINT] = useState("http://209.141.49.238:8008/");
-  const [PIPE_endpoint, setPIPE_endpoint] = useState('');
-  const { ordinalsAddress, paymentAddress } = useWallet();
+  const { ordinalsAddress, paymentAddress,PIPE_endpoint,setPIPE_endpoint,BISON_SEQUENCER_ENDPOINT,NETWORK} = useWallet();
   const [pipeResponse, setPipeResponse] = useState(null);
   const [isDepositConfirmed, setIsDepositConfirmed] = useState(false);
   const [remainingTime, setRemainingTime] = useState(null);
@@ -107,10 +103,10 @@ export default function PipeBridge() {
 
   const checkBalance = async () => {
     let responseData; // 在这里定义
-    if (!pipeResponse || !pipeResponse.hash) return; // 如果没有 pipeResponse 或 hash，则返回
+    if (!pipeResponse || !pipeResponse.address) return; // 如果没有 pipeResponse 或 hash，则返回
 
     const payload = {
-      hash: pipeResponse.hash
+      addr: ordinalsAddress
     };
 
     const requestOptions = {
@@ -235,7 +231,7 @@ export default function PipeBridge() {
     const signMessageOptions = {
       payload: {
         network: {
-          type: "Testnet",
+          type: NETWORK,
         },
         address: ordinalsAddress,
         message: JSON.stringify(pegOutMessageObj),
