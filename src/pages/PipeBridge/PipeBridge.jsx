@@ -106,7 +106,7 @@ export default function PipeBridge() {
     if (!pipeResponse || !pipeResponse.address) return; // 如果没有 pipeResponse 或 hash，则返回
 
     const payload = {
-      addr: pipeResponse.address
+      addr: ordinalsAddress
     };
 
     const requestOptions = {
