@@ -40,9 +40,9 @@ const Bridge = () => {
 
   const fetchBTCSum = async (Address) => {
     try {
-      let  url=`https://mempool.space/testnet/api/address/${Address}`
+      let  url = `https://mempool.space/api/address/${Address}`
       if (NETWORK == 'Testnet') {
-        url = `https://mempool.space/api/address/${Address}`
+        url=`https://mempool.space/testnet/api/address/${Address}`
       }
       const response = await fetch(url);
       const data = await response.json();
