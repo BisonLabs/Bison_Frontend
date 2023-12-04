@@ -197,7 +197,14 @@ export default function PipeBridge() {
     const nonceResponse = await fetch(`${BISON_SEQUENCER_ENDPOINT}/nonce/${ordinalsAddress}`);
     const nonceData = await nonceResponse.json();
     const nonce = nonceData.nonce + 1;
-
+    if (withdrawAmount == 0) {
+        alert("withdraw amount need > 0");
+        return;
+    }
+    if (receiptAddress ==''){
+      alert("receipt address is empty");
+      return;
+    }
     const pegOutMessageObj = {
       method: "pipe_peg_out",
       token: "pipe",
@@ -458,8 +465,8 @@ export default function PipeBridge() {
                 }}
               >
                 <input
-                  value={data.amount}
-                  onChange={handleFormChange}
+                  value={data.withdrawAmount}
+                  onChange={handleWithdrawAmountChange}
                   style={{
                     width: "100%",
                     height: "100%",
@@ -468,9 +475,9 @@ export default function PipeBridge() {
                     background: "transparent",
                     outline: "none",
                   }}
-                  placeholder="Amount"
+                  placeholder="withdrawAmount"
                   type="text"
-                  name="amount"
+                  name="withdrawAmount"
 
 
                 />
