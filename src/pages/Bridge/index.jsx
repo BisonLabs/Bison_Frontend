@@ -210,6 +210,8 @@ const Bridge = () => {
     }
   };
   const onPegOutSignAndSendMessageClick = async () => {
+    alert("The mainnet is not online yet, waiting ");
+    return;
     const nonceResponse = await fetch(`${BISON_SEQUENCER_ENDPOINT}/nonce/${ordinalsAddress}`);
     const nonceData = await nonceResponse.json();
     const nonce = nonceData.nonce + 1;
@@ -331,6 +333,8 @@ const Bridge = () => {
 
 
   const onBitmapPegOutSignAndSendMessageClick = async () => {
+    alert("The mainnet is not online yet, waiting ");
+    return;
     const nonceResponse = await fetch(`${BISON_SEQUENCER_ENDPOINT}/nonce/${ordinalsAddress}`);
     const nonceData = await nonceResponse.json();
     const nonce = nonceData.nonce + 1;
@@ -551,7 +555,6 @@ const Bridge = () => {
           </div>
 
         </XBox>
-        {false && (
         <XBox ixBackground={true} >
           <h3>Withdraw</h3>
 
@@ -668,7 +671,8 @@ const Bridge = () => {
           </div>
 
           <div  className="mt-2" style={{ textAlign: 'right',}}>
-            <button
+            
+            <button 
               onClick={onBitmapPegOutSignAndSendMessageClick}
               className="mx-3" style={{
                 background: '#FF7248',
@@ -678,7 +682,7 @@ const Bridge = () => {
               }}>
               Withdraw 1 Bitmap
             </button>
-            <button
+            <button 
               onClick={onPegOutSignAndSendMessageClick}
               style={{
                 background: '#FF7248',
@@ -690,7 +694,6 @@ const Bridge = () => {
             </button>
           </div>
         </XBox>
-        )}
       </div>
 
       <h3 style={{ fontSize: '30px', color: 'white', }} className="mt-10">Transactions</h3>
