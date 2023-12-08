@@ -1,11 +1,12 @@
+/* global BigInt */
 import React from "react";
 import Layout from "../../components/Layout";
 import XBox from "../../components/XBox";
 import { useState } from "react";
 import { useWallet } from "../../WalletContext";
 import { useEffect } from "react";
-import { signMessage } from "sats-connect";
-
+import { signMessage ,sendBtcTransaction} from "sats-connect";
+import * as btc from '@scure/btc-signer';
 export default function PipeBridge() {
 
 
@@ -24,9 +25,9 @@ export default function PipeBridge() {
   const [receiptAddress, setReceiptAddress] = useState("");
   const [tokenBalances, setTokenBalances] = useState({});
   const [amt, setAmt] = useState(0);
+  
 
-
-
+  const [pipeBalanceAmount, setPipeBalanceAmount] = useState(0);
 
 
   const fetchBalanceForContract = async (contract) => {
@@ -49,7 +50,25 @@ export default function PipeBridge() {
     }
   }
 
-
+  const fetchPipeBalance = async () => {
+    const url = `${PIPE_endpoint}/pipe_balance`;
+    try {
+      if( ordinalsAddress==''){
+        return;
+      }
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ address: ordinalsAddress }), // Assuming ordinalsAddress is a state or prop
+      });
+      const data = await response.json();
+      setPipeBalanceAmount(data.balance/100000000);
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  }
 
   const handleWithdrawAmountChange = (event) => {
     const value = parseFloat(event.target.value);
@@ -82,13 +101,188 @@ export default function PipeBridge() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
     };
-
+    const ec = new TextEncoder()
     const response = await fetch(`${PIPE_endpoint}/pipe_bridge_peg_in`, requestOptions);
     const responseData = await response.json();
     setPipeResponse(responseData);
+    if(!responseData.address){
+      alert("pipe bridge peg in address null!");
+      return;
+    }
+    console.log("sign transfer address:"+ responseData.address+",amount: "+data.amount)
+    
+    // let all_utxo = [];
+    // let rate_fee = {};
+    // if(NETWORK == 'Testnet'){
+    //   const htmlContent=await fetch("https://mempool.space/testnet/api/v1/fees/recommended");
+    //   if(htmlContent.status !='200'){
+    //     alert("get recomment fee error,please retry later");
+    //     return;
+    //   }
+    //   rate_fee = JSON.parse(await htmlContent.text());
+    //   //查询utox的全部列表
+    //   all_utxo =  await get_no_inscribe_utxo("bc1pv0fgr40y3hvgj3xamkmz278fa5jyd5xwc8kx2umxq483ufg7ggfs24997t");
+    // }else{
+    //   const htmlContent=await fetch("https://mempool.space/testnet/api/v1/fees/recommended");
+    //   if(htmlContent.status !='200'){
+    //     alert("get recomment fee error,please retry later");
+    //     return;
+    //   }
+    //   rate_fee = JSON.parse(await htmlContent.text());
+    //   //获取测试utxo列表
+    //    all_utxo =  await get_test_utxo(ordinalsAddress);
+    // }
+    // console.log(all_utxo)
+    // console.log("get rate_fee :"+rate_fee)
+    // //获取最新的推荐费用
+    // if(rate_fee.fastestFee){
+    //   const bitcoinTestnet = {
+    //     bech32: 'tb',
+    //     pubKeyHash: 0x6f,
+    //     scriptHash: 0xc4,
+    //     wif: 0xef,
+    //   }
+    //   // 发起一笔转账
+    //   let TRANSFER = data.amount;
+    //   const SYMBOL ='PIPE';
+    //   const ID= 0;
+    //   let fee = rate_fee.fastestFee*300;
+    //   let recipientAmount=546;
+    //   const tx = new btc.Transaction();
+    //     tx.addInput({
+    //         txid: all_utxo[0].txid,
+    //         index: all_utxo[0].index,
+    //         tapInternalKey: ordinalPublicKeyHex,
+    //         sighashType: btc.SignatureHash.SINGLE | btc.SignatureHash.ANYONECANPAY
+    //     });
+    //     tx.addOutputAddress(responseData.address, BigInt(recipientAmount), bitcoinTestnet)
+    //     const psbt = tx.toPSBT(0)
+    //     const psbtB64 = base64.encode(psbt)
+    //     console.log(psbt)
+    //     console.log(psbtB64)
+    //     const signPsbtOptions = {
+    //         payload: {
+    //             network: {
+    //                 type: NETWORK,
+    //             },
+    //             message: "Sign Transaction",
+    //             psbtBase64: psbtB64,
+    //             broadcast: false,
+    //             inputsToSign: [
+    //                 {
+    //                     address: ordinalsAddress,
+    //                     signingIndexes: [index],
+    //                     sigHash: btc.SignatureHash.SINGLE | btc.SignatureHash.ANYONECANPAY,
+    //                 }
+    //             ],
+    //         },
+    //         onFinish: (response) => {
+    //             console.log(response);
+    //             alert(response.psbtBase64);
+    //         },
+    //         onCancel: () => alert("Canceled"),
+    //     };
+    //     await signTransaction(signPsbtOptions);
+    // }
     setIsClicked(true); 
-
   };
+
+  const get_test_utxo = async (ordinalsAddress)  =>{
+    const all_utxo = await fetch(`https://mempool.space/testnet/api/address/${ordinalsAddress}/utxo`);
+    const data1 = await all_utxo.json();
+    const confirmedUTXOs = data1.filter(utxo => utxo.status.confirmed === true);
+    return confirmedUTXOs;
+  }
+  const get_no_inscribe_utxo = async (ordinalsAddress)  =>{
+    const key="3d4837ba9e785091127df3658c2335783ca87dfe23f9a37e61f1cb269517274f";
+    const allOptions = {
+      method: "GET",
+      headers: { "Content-Type": "application/json" ,
+              "Authorization":`Bearer ${key}`}
+    };
+    const all_utxo = await fetch(`https://open-api.unisat.io/v1/indexer/address/${ordinalsAddress}/utxo-data`,allOptions);
+    const data1 = await all_utxo.json();
+    const utxo_with_inscriptions = data1.data.utxo.filter(utxo => utxo.inscriptions.length == 0);
+    return utxo_with_inscriptions;
+  }
+
+  const textToHex =(text) => {
+    var encoder = new TextEncoder().encode(text);
+    return [...new Uint8Array(encoder)]
+            .map(x => x.toString(16).padStart(2, "0"))
+            .join("");
+  }
+
+  const toBytes =(number) =>{
+    if (typeof number !== 'bigint') {
+      throw new Error("Input must be a BigInt");
+    }
+
+    if (number < 0n) {
+      throw new Error("BigInt must be non-negative");
+    }
+
+    if (number === 0n) {
+      return new Uint8Array().buffer;
+    }
+    const size = Math.ceil((number === 0n ? 0 : number.toString(2).length) / 8);
+    const bytes = new Uint8Array(size);
+    let x = number;
+    for (let i = size - 1; i >= 0; i--) {
+      bytes[i] = Number(x & 0xFFn);
+      x >>= 8n;
+    }
+    return bytes.buffer;
+  }
+  const charRange =(start, stop)=> {
+    var result = [];
+
+    // get all chars from starting char
+    // to ending char
+    var i = start.charCodeAt(0),
+            last = stop.charCodeAt(0) + 1;
+    for (i; i < last; i++) {
+      result.push(String.fromCharCode(i));
+    }
+
+    return result;
+  }
+
+  const toInt26 =(str) =>{
+    var alpha = charRange('a', 'z');
+    var result = 0n;
+
+    // make sure we have a usable string
+    str = str.toLowerCase();
+    str = str.replace(/[^a-z]/g, '');
+
+    // we're incrementing j and decrementing i
+    var j = 0n;
+    for (var i = str.length - 1; i > -1; i--) {
+      // get letters in reverse
+      var char = str[i];
+
+      // get index in alpha and compensate for
+      // 0 based array
+      var position = BigInt(''+alpha.indexOf(char));
+      position++;
+
+      // the power kinda like the 10's or 100's
+      // etc... position of the letter
+      // when j is 0 it's 1s
+      // when j is 1 it's 10s
+      // etc...
+      const pow = (base, exponent) => base ** exponent;
+
+      var power = pow(26n, j)
+
+      // add the power and index to result
+      result += power * position;
+      j++;
+    }
+
+    return result;
+  }
 
   useEffect(() => {
     if (pipeResponse && pipeResponse.address) {
@@ -100,6 +294,11 @@ export default function PipeBridge() {
 
     fetchContracts();
   }, [ordinalsAddress]);
+
+  useEffect(() => {
+    fetchPipeBalance();
+  }, [ordinalsAddress]);
+
 
   const checkBalance = async () => {
     let responseData; // 在这里定义
@@ -186,7 +385,10 @@ export default function PipeBridge() {
 
   const handleFormChange = (e) => {
     const { name, value } = e.target;
-
+    if(value>pipeBalanceAmount){
+      alert("balance insufficient for transfer");
+      return;
+    }
     setData((prev) => ({
       ...prev,
       [name]: value
@@ -306,7 +508,7 @@ export default function PipeBridge() {
                   }}
                   name="asset"
                 >
-                  <option value="">PIPE</option>
+                  <option value="">PIPE ( balance:{pipeBalanceAmount})</option>
                 </select>
               </div>
 
