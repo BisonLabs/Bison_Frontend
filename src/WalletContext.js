@@ -17,6 +17,7 @@ export const WalletProvider = ({ children }) => {
     const [btcContractEndpoint,setBtcContractEndpoint] = useState("http://209.141.49.238:8008/");
     const [PIPE_endpoint,setPIPE_endpoint] = useState("http://209.141.49.238:5077/");
     const [NETWORK,setNetwork] = useState("Testnet");
+    const [BRC20_endpoint,setBRC20_endpoint] = useState("http://209.141.49.238:5072");
 
     return (
         <WalletContext.Provider value={{
