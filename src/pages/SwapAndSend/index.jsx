@@ -63,11 +63,13 @@ const SwapAndSend = () => {
 
     if(amount<=0){
       alert("The transfer amount must be greater than zero");
+      return;
     }
     if (NETWORK != 'Testnet' && receiptAddress.startsWith('bc1p')){
     }else if (NETWORK == 'Testnet' && receiptAddress.startsWith('tb1q')){
     }else{
       alert("receipt address must be ordinals address!");
+      return;
     }
 
     // 获取 nonce
