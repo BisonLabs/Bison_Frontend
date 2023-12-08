@@ -46,6 +46,16 @@ const SwapAndSend = () => {
       });
   }
 
+  const receiptAddressChange = async (e) =>{
+    let address = e.target.value;
+    if (NETWORK != 'Testnet' && address.startsWith('bc1p')){
+      setReceiptAddress(address)
+    }else if (NETWORK == 'Testnet' && address.startsWith('tb1q')){
+      setReceiptAddress(address)
+    }else{
+      alert("receipt address must be ordinals address!");
+    }
+  }
 
   const onSignAndSendMessageClick = async () => {
 
@@ -665,7 +675,7 @@ const SwapAndSend = () => {
               placeholder="Address"
               type="text"
               value={receiptAddress}
-              onChange={(e) => setReceiptAddress(e.target.value)}
+              onChange={receiptAddressChange}
 
             />
           </div>
