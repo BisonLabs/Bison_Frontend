@@ -508,7 +508,7 @@ export default function PipeBridge() {
                   }}
                   name="asset"
                 >
-                  <option value="">TEST (pipe | dmt)</option>
+                  <option value="">TEST (pipe | dmt) balance: {pipeBalanceAmount}</option>
                 </select>
               </div>
 
