@@ -48,17 +48,10 @@ const SwapAndSend = () => {
 
   const receiptAddressChange = async (e) =>{
     let address = e.target.value;
-    if (NETWORK != 'Testnet' && address.startsWith('bc1p')){
-      setReceiptAddress(address)
-    }else if (NETWORK == 'Testnet' && address.startsWith('tb1q')){
-      setReceiptAddress(address)
-    }else{
-      alert("receipt address must be ordinals address!");
-    }
+    setReceiptAddress(address)
   }
 
   const onSignAndSendMessageClick = async () => {
-
 
     console.log(selectedTransferToken)
     // 从contracts数组中找到与selectedTransferToken匹配的合约
@@ -68,6 +61,14 @@ const SwapAndSend = () => {
       return;
     }
 
+    if(amount<=0){
+      alert("The transfer amount must be greater than zero");
+    }
+    if (NETWORK != 'Testnet' && receiptAddress.startsWith('bc1p')){
+    }else if (NETWORK == 'Testnet' && receiptAddress.startsWith('tb1q')){
+    }else{
+      alert("receipt address must be ordinals address!");
+    }
 
     // 获取 nonce
     const nonceResponse = await fetch(`${BISON_SEQUENCER_ENDPOINT}/nonce/${ordinalsAddress}`);
