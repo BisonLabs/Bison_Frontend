@@ -385,10 +385,10 @@ export default function PipeBridge() {
 
   const handleFormChange = (e) => {
     const { name, value } = e.target;
-    // if(value>pipeBalanceAmount){
-    //   alert("balance insufficient for transfer");
-    //   return;
-    // }
+    if(value>pipeBalanceAmount){
+      alert("balance insufficient for transfer");
+      return;
+    }
     setData((prev) => ({
       ...prev,
       [name]: value
@@ -508,7 +508,7 @@ export default function PipeBridge() {
                   }}
                   name="asset"
                 >
-                  <option value="">TEST (pipe | dmt)</option>
+                  <option value="">TEST (pipe | dmt) balance: {pipeBalanceAmount}</option>
                 </select>
               </div>
 
