@@ -551,8 +551,8 @@ const Bridge = () => {
           </div>
 
         </XBox>
-
-        <XBox ixBackground={true}>
+        {false && (
+        <XBox ixBackground={true} >
           <h3>Withdraw</h3>
 
 
@@ -667,7 +667,7 @@ const Bridge = () => {
 
           </div>
 
-          <div className="mt-2" style={{ textAlign: 'right', }}>
+          <div  className="mt-2" style={{ textAlign: 'right',}}>
             <button
               onClick={onBitmapPegOutSignAndSendMessageClick}
               className="mx-3" style={{
@@ -690,7 +690,7 @@ const Bridge = () => {
             </button>
           </div>
         </XBox>
-
+        )}
       </div>
 
       <h3 style={{ fontSize: '30px', color: 'white', }} className="mt-10">Transactions</h3>
