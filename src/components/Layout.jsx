@@ -138,7 +138,7 @@ const Layout = ({ children }) => {
   const menuItems = [
     { path: "/bridge", label: "Bridge" },
     { path: "/swap-and-send", label: "Swap And Send" },
-    { path: "/bitmap-bridge", label: "Bitmap Bridge" },
+    // { path: "/bitmap-bridge", label: "Bitmap Bridge" },
     { path: "/pipe-bridge", label: "Pipe Bridge" }
 
     
