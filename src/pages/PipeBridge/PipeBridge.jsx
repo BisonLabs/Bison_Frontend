@@ -367,7 +367,7 @@ export default function PipeBridge() {
       const response = await fetch(`${BISON_SEQUENCER_ENDPOINT}contracts_list`);
       const data = await response.json();
 
-      const pipeContract = data.contracts.find(contract => contract.tick === 'pipe');
+      const pipeContract = data.contracts.find(contract => contract.tick === 'pipe'||contract.tick === 'TESTpipe');
       if (pipeContract) {
         setPIPE_endpoint(pipeContract.contractEndpoint);
         fetchBalanceForContract(pipeContract);
