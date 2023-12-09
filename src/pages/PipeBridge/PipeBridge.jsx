@@ -703,9 +703,8 @@ export default function PipeBridge() {
               </label>
 
 
-
               <p style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', }}>
-                {tokenBalances['pipe'] ? (tokenBalances['pipe'] / 100000000).toFixed(8) : '0.00000000'} PIPE
+                {tokenBalances['pipe'] ? (tokenBalances['pipe'] / 100000000).toFixed(8) : tokenBalances['TESTpipe'] ? (tokenBalances['TESTpipe'] / 100000000).toFixed(8) : '0.00000000'} PIPE
               </p>
 
             </div>
