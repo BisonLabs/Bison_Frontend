@@ -243,7 +243,7 @@ const SwapAndSend = () => {
 
       let adjustedSwapAmount = swapAmount;
 
-      if (selectedSwapToken1.toLowerCase() === "btc" || selectedSwapToken1.toLowerCase() === "pipe"||selectedSwapToken1.toLowerCase() === "TESTpipe") {
+      if (selectedSwapToken1.toLowerCase() === "btc" || selectedSwapToken1.toLowerCase() === "pipe"||selectedSwapToken1.toLowerCase() === "testpipe") {
         adjustedSwapAmount = Math.round(swapAmount * 100000000); // 1 btc = 100,000,000 sats
       }
 
@@ -314,7 +314,7 @@ const SwapAndSend = () => {
 
     let adjustedSwapAmount = swapAmount;
 
-    if (selectedSwapToken1.toLowerCase() === "btc" || selectedSwapToken1.toLowerCase() === 'pipe'|| selectedSwapToken1.toLowerCase() === 'TESTpipe') {
+    if (selectedSwapToken1.toLowerCase() === "btc" || selectedSwapToken1.toLowerCase() === 'pipe'|| selectedSwapToken1.toLowerCase() === 'testpipe') {
       adjustedSwapAmount = Math.round(swapAmount * 100000000); // 1 btc = 100,000,000 sats
     }
     const amount1 = parseInt(adjustedSwapAmount);
@@ -615,7 +615,7 @@ const SwapAndSend = () => {
                 justifyContent: 'flex-start',
               }}
             >
-              {selectedSwapToken2.toLowerCase() === "btc" || selectedSwapToken2.toLowerCase() === "pipe" || selectedSwapToken2.toLowerCase() === "TESTpipe" ? (amount2 / 100000000).toFixed(8) : amount2}
+              {selectedSwapToken2.toLowerCase() === "btc" || selectedSwapToken2.toLowerCase() === "pipe" || selectedSwapToken2.toLowerCase() === "testpipe" ? (amount2 / 100000000).toFixed(8) : amount2}
             </div>
 
             <select style={{
