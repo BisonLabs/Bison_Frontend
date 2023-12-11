@@ -585,7 +585,7 @@ export default function PipeBridge() {
                       Order expires in 1 hour. Once complete wait 1 block.
                       <br />
                       <strong>
-                        Send { data.amount} amount of PIPE from {ordinalsAddress} to {pipeResponse ? pipeResponse.address : "error"}
+                        Send { data.amount} amount of PIPE <br/>from {ordinalsAddress} <br/>to {pipeResponse ? pipeResponse.address : "error"}
                         <br /> 
                         Last Deposit Status: {pipeResponse ? pipeResponse.status : ""} 
                         {pipeResponse && pipeResponse.status === "successful" && 
@@ -593,7 +593,6 @@ export default function PipeBridge() {
                               &nbsp;Amount: {amt/100000000} pipe
                             </span>
                           }
-                        {remainingTime !== null && <div>Remaining time: {Math.floor(remainingTime / 60000)} minutes {((remainingTime % 60000) / 1000).toFixed(0)} seconds</div>}
                       </strong>
                     </p>
                   </div>  
