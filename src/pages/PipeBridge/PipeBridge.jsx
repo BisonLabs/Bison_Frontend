@@ -585,19 +585,19 @@ export default function PipeBridge() {
                       Order expires in 1 hour. Once complete wait 1 block.
                       <br />
                       <strong>
-                        Send {amt ? (amt / 100000000).toFixed(8) : 0} amount of PIPE to {pipeResponse ? pipeResponse.address : "error"}
-                        <br />
-                        Status: {pipeResponse ? pipeResponse.status : ""}
-                        {remainingTime !== null && <div>Remaining time: {Math.floor(remainingTime / 60000)} minutes {((remainingTime % 60000) / 1000).toFixed(0)} seconds</div>}
+                        Send { data.amount} amount of PIPE <br/>from {ordinalsAddress} <br/>to {pipeResponse ? pipeResponse.address : "error"}
+                        <br /> 
+                        Last Deposit Status: {pipeResponse ? pipeResponse.status : ""} 
+                        {pipeResponse && pipeResponse.status === "successful" && 
+                            <span>
+                              &nbsp;Amount: {amt/100000000} pipe
+                            </span>
+                          }
                       </strong>
                     </p>
                   </div>  
                 </>
-
               }
-
-
-
             </XBox>
             {
               isClicked &&
@@ -613,7 +613,7 @@ export default function PipeBridge() {
                     fontSize: '23px',
                     marginTop: '30px',
                   }}>
-                  Check Balance
+                  Check Last Deposit
                 </button>
               </div>
             }
