@@ -367,7 +367,7 @@ export default function PipeBridge() {
       const response = await fetch(`${BISON_SEQUENCER_ENDPOINT}contracts_list`);
       const data = await response.json();
 
-      const pipeContract = data.contracts.find(contract => contract.tick === 'pipe');
+      const pipeContract = data.contracts.find(contract => contract.tick === 'pipe'||contract.tick === 'TESTpipe');
       if (pipeContract) {
         setPIPE_endpoint(pipeContract.contractEndpoint);
         fetchBalanceForContract(pipeContract);
@@ -508,7 +508,7 @@ export default function PipeBridge() {
                   }}
                   name="asset"
                 >
-                  <option value="">PIPE ( balance:{pipeBalanceAmount})</option>
+                  <option value="">TEST (pipe | dmt) balance: {pipeBalanceAmount}</option>
                 </select>
               </div>
 
@@ -650,7 +650,7 @@ export default function PipeBridge() {
                   }}
                   name="asset"
                 >
-                  <option value="">PIPE</option>
+                  <option value="">TEST (pipe | dmt)</option>
                 </select>
               </div>
 
@@ -703,9 +703,8 @@ export default function PipeBridge() {
               </label>
 
 
-
               <p style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', }}>
-                {tokenBalances['pipe'] ? (tokenBalances['pipe'] / 100000000).toFixed(8) : '0.00000000'} PIPE
+                {tokenBalances['pipe'] ? (tokenBalances['pipe'] / 100000000).toFixed(8) : tokenBalances['TESTpipe'] ? (tokenBalances['TESTpipe'] / 100000000).toFixed(8) : '0.00000000'} PIPE
               </p>
 
             </div>

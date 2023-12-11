@@ -46,9 +46,12 @@ const SwapAndSend = () => {
       });
   }
 
+  const receiptAddressChange = async (e) =>{
+    let address = e.target.value;
+    setReceiptAddress(address)
+  }
 
   const onSignAndSendMessageClick = async () => {
-
 
     console.log(selectedTransferToken)
     // 从contracts数组中找到与selectedTransferToken匹配的合约
@@ -58,6 +61,16 @@ const SwapAndSend = () => {
       return;
     }
 
+    if(amount<=0){
+      alert("The transfer amount must be greater than zero");
+      return;
+    }
+    if (NETWORK != 'Testnet' && receiptAddress.startsWith('bc1p')){
+    }else if (NETWORK == 'Testnet' && receiptAddress.startsWith('tb1q')){
+    }else{
+      alert("receipt address must be ordinals address!");
+      return;
+    }
 
     // 获取 nonce
     const nonceResponse = await fetch(`${BISON_SEQUENCER_ENDPOINT}/nonce/${ordinalsAddress}`);
@@ -66,7 +79,7 @@ const SwapAndSend = () => {
 
     // 如果tick是btc,那么amount从btc转化成sats
     let transferAmount = amount;
-    if (selectedTransferToken === 'btc' || selectedTransferToken === 'pipe') {
+    if (selectedTransferToken === 'btc' || selectedTransferToken === 'pipe' || selectedTransferToken === 'TESTpipe') {
       transferAmount = Math.round(parseFloat(amount) * 100000000); // 1 BTC = 100,000,000 sats
     } else {
       transferAmount = parseInt(amount, 10);
@@ -161,7 +174,7 @@ const SwapAndSend = () => {
     if (value.startsWith('-')) return;
 
     // If selectedTransferToken is 'btc', allow decimal input
-    if (selectedTransferToken === 'btc' || selectedTransferToken === 'pipe') {
+    if (selectedTransferToken === 'btc' || selectedTransferToken === 'pipe'|| selectedTransferToken === 'TESTpipe') {
       if (!value || /^[0-9]*\.?[0-9]*$/.test(value)) {
         setAmount(value);
       }
@@ -230,7 +243,7 @@ const SwapAndSend = () => {
 
       let adjustedSwapAmount = swapAmount;
 
-      if (selectedSwapToken1.toLowerCase() === "btc" || selectedSwapToken1.toLowerCase() === "pipe") {
+      if (selectedSwapToken1.toLowerCase() === "btc" || selectedSwapToken1.toLowerCase() === "pipe"||selectedSwapToken1.toLowerCase() === "testpipe") {
         adjustedSwapAmount = Math.round(swapAmount * 100000000); // 1 btc = 100,000,000 sats
       }
 
@@ -283,7 +296,7 @@ const SwapAndSend = () => {
     if (value.startsWith('-')) return;
 
     // If selectedSwapToken1 is 'btc', allow decimal input
-    if (selectedSwapToken1 === 'btc' || selectedSwapToken1 === 'pipe') {
+    if (selectedSwapToken1 === 'btc' || selectedSwapToken1 === 'pipe'|| selectedSwapToken1 === 'TESTpipe') {
       if (!value || /^[0-9]*\.?[0-9]*$/.test(value)) {
         setSwapAmount(value);
       }
@@ -301,7 +314,7 @@ const SwapAndSend = () => {
 
     let adjustedSwapAmount = swapAmount;
 
-    if (selectedSwapToken1.toLowerCase() === "btc" || selectedSwapToken1.toLowerCase() === 'pipe') {
+    if (selectedSwapToken1.toLowerCase() === "btc" || selectedSwapToken1.toLowerCase() === 'pipe'|| selectedSwapToken1.toLowerCase() === 'testpipe') {
       adjustedSwapAmount = Math.round(swapAmount * 100000000); // 1 btc = 100,000,000 sats
     }
     const amount1 = parseInt(adjustedSwapAmount);
@@ -602,7 +615,7 @@ const SwapAndSend = () => {
                 justifyContent: 'flex-start',
               }}
             >
-              {selectedSwapToken2.toLowerCase() === "btc" || selectedSwapToken2.toLowerCase() === "pipe" ? (amount2 / 100000000).toFixed(8) : amount2}
+              {selectedSwapToken2.toLowerCase() === "btc" || selectedSwapToken2.toLowerCase() === "pipe" || selectedSwapToken2.toLowerCase() === "testpipe" ? (amount2 / 100000000).toFixed(8) : amount2}
             </div>
 
             <select style={{
@@ -665,7 +678,7 @@ const SwapAndSend = () => {
               placeholder="Address"
               type="text"
               value={receiptAddress}
-              onChange={(e) => setReceiptAddress(e.target.value)}
+              onChange={receiptAddressChange}
 
             />
           </div>
@@ -753,7 +766,7 @@ const SwapAndSend = () => {
                       </thead>
                       <tbody>
                         {contracts.map((contract, index) => {
-                          const balance = (contract.tick === 'btc' || contract.tick === 'pipe')
+                          const balance = (contract.tick === 'btc' || contract.tick === 'TESTpipe'|| contract.tick === 'pipe')
                             ? parseFloat((tokenBalances[contract.tick] || 0) / 100000000).toFixed(8)
                             : tokenBalances[contract.tick] || 0;
 
