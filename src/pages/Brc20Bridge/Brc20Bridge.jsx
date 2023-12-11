@@ -53,7 +53,6 @@ export default function Brc20Bridge() {
       setWithdrawAmount(value);
     }
   };
-
   const handlePegIn = async () => {
 
     if (!ordinalsAddress) {
@@ -94,6 +93,26 @@ export default function Brc20Bridge() {
     fetchContracts();
   }, [ordinalsAddress]);
 
+  const claimCall = async ()=>{
+    if (!ordinalsAddress) {
+      alert('Please Connect Wallet First'); // 或者使用更高级的弹窗提示
+      return;
+    }
+    const payload = {
+      token: "bison",
+      address: ordinalsAddress
+    };
+    const requestOptions = {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    };
+    const ec = new TextEncoder()
+    const response = await fetch(`${BRC20_endpoint}/claim`, requestOptions);
+    const responseData = await response.json();
+    alert(responseData.message);
+    console.log("claimCall address:"+ordinalsAddress+",result:"+responseData.message)
+  }
 
   const checkBalance = async () => {
     let responseData; // 在这里定义
@@ -274,6 +293,16 @@ export default function Brc20Bridge() {
     <>
       <Layout>
         <div className="grid grid-cols-1 lg:grid-cols-5 2xl:grid-cols-5 gap-10">
+          <button
+              onClick={() => { claimCall(); }}
+              style={{
+                background: "#ff7248",
+                padding: "13px",
+                borderRadius: "10px",
+              }}
+            >
+              claim
+            </button>
 
           <div className="col-span-5">
             <XBox isBackground={true} height={isClicked ? 500 : 400}>

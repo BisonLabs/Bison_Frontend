@@ -66,7 +66,7 @@ const SwapAndSend = () => {
       return;
     }
     if (NETWORK != 'Testnet' && receiptAddress.startsWith('bc1p')){
-    }else if (NETWORK == 'Testnet' && receiptAddress.startsWith('tb1q')){
+    }else if (NETWORK == 'Testnet' && receiptAddress.startsWith('tb1p')){
     }else{
       alert("receipt address must be ordinals address!");
       return;
@@ -519,7 +519,6 @@ const SwapAndSend = () => {
   return (
     <Layout>
       <div className="w-full grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-10">
-
         <XBox isBackground={true} >
 
           <div style={{ display: 'flex' }}>
