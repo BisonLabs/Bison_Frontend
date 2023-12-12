@@ -99,7 +99,7 @@ export default function Brc20Bridge() {
       return;
     }
     const payload = {
-      token: "bison",
+      token: "labb",
       address: ordinalsAddress
     };
     const requestOptions = {
