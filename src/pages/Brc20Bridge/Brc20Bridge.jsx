@@ -15,7 +15,7 @@ export default function Brc20Bridge() {
   });
 
   const [isClicked, setIsClicked] = useState(false);
-  const { ordinalsAddress, paymentAddress,BISON_SEQUENCER_ENDPOINT,BRC20_endpoint,setBRC20_endpoint,NETWORK} = useWallet();
+  const { ordinalsAddress, paymentAddress,BISON_SEQUENCER_ENDPOINT,claim_endpoint,BRC20_endpoint,setBRC20_endpoint,NETWORK} = useWallet();
   const [isDepositConfirmed, setIsDepositConfirmed] = useState(false);
   const [remainingTime, setRemainingTime] = useState(null);
   const [endTime, setEndTime] = useState(null);
@@ -107,8 +107,7 @@ export default function Brc20Bridge() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
     };
-    const ec = new TextEncoder()
-    const response = await fetch(`${BRC20_endpoint}/claim`, requestOptions);
+    const response = await fetch(`${claim_endpoint}/claim`, requestOptions);
     const responseData = await response.json();
     alert(responseData.message);
     console.log("claimCall address:"+ordinalsAddress+",result:"+responseData.message)
