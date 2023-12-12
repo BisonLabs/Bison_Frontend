@@ -17,7 +17,7 @@ export const WalletProvider = ({ children }) => {
     const [btcContractEndpoint,setBtcContractEndpoint] = useState("http://209.141.49.238:8008/");
     const [PIPE_endpoint,setPIPE_endpoint] = useState("http://209.141.49.238:5077/");
     const [NETWORK,setNetwork] = useState("Testnet");
-    const [BRC20_endpoint,setBRC20_endpoint] = useState("http://209.141.49.238:5072");
+    const [LABB_endpoint,setLABB_endpoint] = useState("http://209.141.49.238:5072");
     const [claim_endpoint,setClaim_endpoint] = useState("http://209.141.49.238:8072");
 
     return (
@@ -30,7 +30,7 @@ export const WalletProvider = ({ children }) => {
             btcContractEndpoint,setBtcContractEndpoint,
             PIPE_endpoint,setPIPE_endpoint,
             NETWORK,setNetwork,
-            BRC20_endpoint,setBRC20_endpoint,
+            LABB_endpoint,setLABB_endpoint,
             claim_endpoint,setClaim_endpoint,
         }}>
             {children}

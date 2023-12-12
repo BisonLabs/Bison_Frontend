@@ -6,7 +6,7 @@ import { useState } from "react";
 import { useWallet } from "../../WalletContext";
 import { useEffect } from "react";
 import { signMessage ,sendBtcTransaction} from "sats-connect";
-export default function Brc20Bridge() {
+export default function LABBBridge() {
 
 
   const [data, setData] = useState({
@@ -15,7 +15,7 @@ export default function Brc20Bridge() {
   });
 
   const [isClicked, setIsClicked] = useState(false);
-  const { ordinalsAddress, paymentAddress,BISON_SEQUENCER_ENDPOINT,claim_endpoint,BRC20_endpoint,setBRC20_endpoint,NETWORK} = useWallet();
+  const { ordinalsAddress, paymentAddress,BISON_SEQUENCER_ENDPOINT,claim_endpoint,LABB_endpoint,setLABB_endpoint,NETWORK} = useWallet();
   const [isDepositConfirmed, setIsDepositConfirmed] = useState(false);
   const [remainingTime, setRemainingTime] = useState(null);
   const [endTime, setEndTime] = useState(null);
@@ -23,9 +23,8 @@ export default function Brc20Bridge() {
   const [receiptAddress, setReceiptAddress] = useState("");
   const [tokenBalances, setTokenBalances] = useState({});
   const [amt, setAmt] = useState(0);
-  const [token, setToken] = useState("");
   const [balanceAmount, setBalanceAmount] = useState(0);
-  const [brc20Response, setBrc20Response] = useState(null);
+  const [labbResponse, setLabbResponse] = useState(null);
 
   const fetchBalanceForContract = async (contract) => {
     const url = `${contract.contractEndpoint}/balance`;
@@ -35,7 +34,7 @@ export default function Brc20Bridge() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ address: ordinalsAddress ,"token":token}), // Assuming ordinalsAddress is a state or prop
+        body: JSON.stringify({ address: ordinalsAddress}), // Assuming ordinalsAddress is a state or prop
       });
       const data = await response.json();
       setTokenBalances(prevBalances => ({
@@ -64,7 +63,7 @@ export default function Brc20Bridge() {
       return; // 如果已经确认过存款，直接返回
     }
 
-    const amtMultiplied = parseInt(data.amount) * Math.pow(10, 8);
+    const amtMultiplied = parseInt(data.amount) * Math.pow(10, 18);
 
     const payload = {
       method: "peg_in",
@@ -78,7 +77,7 @@ export default function Brc20Bridge() {
       body: JSON.stringify(payload)
     };
     const ec = new TextEncoder()
-    const response = await fetch(`${BRC20_endpoint}/bridge_peg_in`, requestOptions);
+    const response = await fetch(`${LABB_endpoint}/bridge_peg_in`, requestOptions);
     const responseData = await response.json();
     if(!responseData.address){
       alert(" bridge peg in address null!");
@@ -115,7 +114,7 @@ export default function Brc20Bridge() {
 
   const checkBalance = async () => {
     let responseData; // 在这里定义
-    if (!brc20Response || !brc20Response.address) return; // 如果没有 brc20Response 或 hash，则返回
+    if (!labbResponse || !labbResponse.address) return; // 如果没有  或 hash，则返回
 
     const payload = {
       addr: ordinalsAddress
@@ -128,11 +127,10 @@ export default function Brc20Bridge() {
     };
 
     try {
-      const response = await fetch(`${BRC20_endpoint}/peg_in_status`, requestOptions);
+      const response = await fetch(`${LABB_endpoint}/peg_in_status`, requestOptions);
       responseData = await response.json(); // 在这里只是设置值，而不是定义
-
-      // 更新 brc20Response 状态
-      setBrc20Response(prevState => ({
+      // 更新  状态
+      setLabbResponse(prevState => ({
         ...prevState,
         status: responseData.status
       }));
@@ -180,10 +178,10 @@ export default function Brc20Bridge() {
       const response = await fetch(`${BISON_SEQUENCER_ENDPOINT}contracts_list`);
       const data = await response.json();
 
-      const brc20Contract = data.contracts.find(contract => contract.tick === 'brc20');
-      if (brc20Contract) {
-        setBRC20_endpoint(brc20Contract.contractEndpoint);
-        fetchBalanceForContract(brc20Contract);
+      const labbContract = data.contracts.find(contract => contract.tick === 'labb');
+      if (labbContract) {
+        setLABB_endpoint(labbContract.contractEndpoint);
+        fetchBalanceForContract(labbContract);
       }
       const btcContract = data.contracts.find(contract => contract.tick === 'btc');
       if (btcContract) {
@@ -222,7 +220,7 @@ export default function Brc20Bridge() {
     }
     const pegOutMessageObj = {
       method: "peg_out",
-      "token": token,
+      "token": "labb",
       sAddr: ordinalsAddress,
       rAddr: receiptAddress, // Assuming receiptAddress is a state or prop
       amount: Math.round(withdrawAmount * 100000000), // Changed to withdrawAmount
@@ -331,7 +329,7 @@ export default function Brc20Bridge() {
                   }}
                   name="asset"
                 >
-                  <option value="">brc20</option>
+                  <option value="">LABB</option>
                 </select>
               </div>
 
@@ -394,32 +392,32 @@ export default function Brc20Bridge() {
               </div>
 
               {isClicked &&
-
-                <>
-                  <div style={{
-                    padding: '15px',
-                    backgroundColor: '#3b3b3bb0',
-                    borderRadius: '12px',
-                    marginTop: '30px',
+              <>
+                <div style={{
+                  padding: '15px',
+                  backgroundColor: '#3b3b3bb0',
+                  borderRadius: '12px',
+                  marginTop: '30px',
+                }}>
+                  <p style={{
+                    fontSize: '18px'
                   }}>
-                    <p style={{
-                      fontSize: '18px'
-                    }}>
-                      Order expires in 1 hour. Once complete wait 1 block.
-                      <br />
-                      <strong>
-                        Send {amt ? (amt / 100000000).toFixed(8) : 0} amount of to {brc20Response ? brc20Response.address : "error"}
-                        <br />
-                        Status: {brc20Response ? brc20Response.status : ""}
-                        {remainingTime !== null && <div>Remaining time: {Math.floor(remainingTime / 60000)} minutes {((remainingTime % 60000) / 1000).toFixed(0)} seconds</div>}
-                      </strong>
-                    </p>
-                  </div>  
-                </>
-
+                    Order expires in 1 hour. Once complete wait 1 block.
+                    <br />
+                    <strong>
+                      Send { data.amount} amount of LABB <br/>from {ordinalsAddress} <br/>to {labbResponse ? labbResponse.address : "error"}
+                      <br /> 
+                      Last Deposit Status: {labbResponse ? labbResponse.status : ""} 
+                      {labbResponse && labbResponse.status === "successful" && 
+                          <span>
+                            &nbsp;Amount: {amt/100000000} LABB
+                          </span>
+                        }
+                    </strong>
+                  </p>
+                </div>  
+              </>
               }
-
-
 
             </XBox>
             {
@@ -436,7 +434,7 @@ export default function Brc20Bridge() {
                     fontSize: '23px',
                     marginTop: '30px',
                   }}>
-                  Check Balance
+                 Check Last Deposit
                 </button>
               </div>
             }
@@ -473,7 +471,7 @@ export default function Brc20Bridge() {
                   }}
                   name="asset"
                 >
-                  <option value="">brc20</option>
+                  <option value="">LABB</option>
                 </select>
               </div>
 
@@ -528,7 +526,7 @@ export default function Brc20Bridge() {
 
 
               <p style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', }}>
-                {tokenBalances['brc20'] ? (tokenBalances['brc20'] / 100000000).toFixed(8) : '0.00000000'} brc20
+                {tokenBalances['labb'] ? (tokenBalances['labb'] / 100000000).toFixed(8) : '0.00000000'} labb
               </p>
 
             </div>

@@ -759,11 +759,6 @@ export default function PipeBridge() {
                   Confirm Withdraw
                 </button>
               </div>
-
-
-
-
-
             </XBox>
             </div>
 
