@@ -25,7 +25,8 @@ export default function LABBBridge() {
   const [amt, setAmt] = useState(0);
   const [balanceAmount, setBalanceAmount] = useState(0);
   const [labbResponse, setLabbResponse] = useState(null);
-
+  const [labbBalanceAmount, setLabbBalanceAmount] = useState(0);
+  
   const fetchBalanceForContract = async (contract) => {
     const url = `${contract.contractEndpoint}/balance`;
     try {
@@ -41,6 +42,30 @@ export default function LABBBridge() {
         ...prevBalances,
         [contract.tick]: data.balance
       }));
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  }
+  useEffect(() => {
+    fetchLabbBalance();
+  }, [ordinalsAddress]);
+
+  
+  const fetchLabbBalance = async () => {
+    const url = `${LABB_endpoint}/labb_balance`;
+    try {
+      if( ordinalsAddress==''){
+        return;
+      }
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ address: ordinalsAddress }), // Assuming ordinalsAddress is a state or prop
+      });
+      const data = await response.json();
+      setLabbBalanceAmount(data.balance/100000000);
     } catch (error) {
       console.error('Error:', error);
     }
@@ -63,7 +88,7 @@ export default function LABBBridge() {
       return; // 如果已经确认过存款，直接返回
     }
 
-    const amtMultiplied = parseInt(data.amount) * Math.pow(10, 18);
+    const amtMultiplied = parseInt(data.amount) * Math.pow(10, 8);
 
     const payload = {
       method: "peg_in",
@@ -83,6 +108,7 @@ export default function LABBBridge() {
       alert(" bridge peg in address null!");
       return;
     }
+    setLabbResponse(responseData);
     console.log("sign transfer address:"+ responseData.address+",amount: "+data.amount)
     setIsClicked(true); 
   };
@@ -196,7 +222,7 @@ export default function LABBBridge() {
 
   const handleFormChange = (e) => {
     const { name, value } = e.target;
-    if(value>balanceAmount){
+    if(value>labbBalanceAmount){
       alert("balance insufficient for transfer");
       return;
     }
@@ -329,7 +355,7 @@ export default function LABBBridge() {
                   }}
                   name="asset"
                 >
-                  <option value="">LABB</option>
+                  <option value="">LABB  balance: {labbBalanceAmount}</option>
                 </select>
               </div>
 
