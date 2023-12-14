@@ -210,8 +210,11 @@ const Bridge = () => {
     }
   };
   const onPegOutSignAndSendMessageClick = async () => {
-    alert("The mainnet is not online yet, waiting ");
-    return;
+    if (NETWORK != 'Testnet') {
+      alert("The mainnet is not online yet, waiting ");
+      return;
+    }
+  
     const nonceResponse = await fetch(`${BISON_SEQUENCER_ENDPOINT}/nonce/${ordinalsAddress}`);
     const nonceData = await nonceResponse.json();
     const nonce = nonceData.nonce + 1;
