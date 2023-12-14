@@ -140,7 +140,7 @@ const Layout = ({ children }) => {
     { path: "/swap-and-send", label: "Swap And Send" },
     // { path: "/bitmap-bridge", label: "Bitmap Bridge" },
     { path: "/pipe-bridge", label: "Pipe Bridge" },
-    { path: "/labb-bridge", label: "labb Bridge" }
+    { path: "/labb-bridge", label: "LABB Bridge" }
 
     
   ];
