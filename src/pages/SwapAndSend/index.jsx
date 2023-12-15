@@ -614,7 +614,7 @@ const SwapAndSend = () => {
                 justifyContent: 'flex-start',
               }}
             >
-              {selectedSwapToken2.toLowerCase() === "btc" || selectedSwapToken2.toLowerCase() === "pipe" || selectedSwapToken2.toLowerCase() === "testpipe" ? (amount2 / 100000000).toFixed(8) : amount2}
+              {selectedSwapToken2.toLowerCase() === "btc" || selectedSwapToken2.toLowerCase() === "pipe" || selectedSwapToken2.toLowerCase() === "testpipe" || selectedSwapToken2.toLowerCase() === "labb"  ? (amount2 / 100000000).toFixed(8) : amount2}
             </div>
 
             <select style={{
