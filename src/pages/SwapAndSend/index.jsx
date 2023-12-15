@@ -765,7 +765,7 @@ const SwapAndSend = () => {
                       </thead>
                       <tbody>
                         {contracts.map((contract, index) => {
-                          const balance = (contract.tick === 'btc' || contract.tick === 'TESTpipe'|| contract.tick === 'pipe')
+                          const balance = (contract.tick === 'btc' || contract.tick === 'TESTpipe'|| contract.tick === 'pipe'|| contract.tick === 'labb')
                             ? parseFloat((tokenBalances[contract.tick] || 0) / 100000000).toFixed(8)
                             : tokenBalances[contract.tick] || 0;
 
