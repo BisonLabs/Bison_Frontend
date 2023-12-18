@@ -322,6 +322,7 @@ export default function LABBBridge() {
                 background: "#ff7248",
                 padding: "13px",
                 borderRadius: "10px",
+                display:none
               }}
             >
               claim
@@ -355,7 +356,7 @@ export default function LABBBridge() {
                   }}
                   name="asset"
                 >
-                  <option value="">LABB  balance: {labbBalanceAmount}</option>
+                  <option value="">LABB  balance: {labbBalanceAmount} (Layer One)</option>
                 </select>
               </div>
 
