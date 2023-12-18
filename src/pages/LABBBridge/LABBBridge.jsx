@@ -322,7 +322,7 @@ export default function LABBBridge() {
                 background: "#ff7248",
                 padding: "13px",
                 borderRadius: "10px",
-                display:none
+                display:"None"
               }}
             >
               claim
