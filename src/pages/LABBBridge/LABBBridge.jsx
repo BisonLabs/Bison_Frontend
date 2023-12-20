@@ -432,7 +432,7 @@ export default function LABBBridge() {
                     Order expires in 1 hour. Once complete wait 1 block.
                     <br />
                     <strong>
-                      Send { data.amount} amount of LABB <br/>from {ordinalsAddress} <br/>to {labbResponse ? labbResponse.address : "error"}
+                      Send { data.amount} LABB tokens <br/> ONLY from {ordinalsAddress} <br/>to {labbResponse ? labbResponse.address : "error"}
                       <br /> 
                       Last Deposit Status: {labbResponse ? labbResponse.status : ""} 
                       {labbResponse && labbResponse.status === "successful" && 
