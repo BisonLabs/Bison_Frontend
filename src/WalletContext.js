@@ -13,10 +13,12 @@ export const WalletProvider = ({ children }) => {
     const [paymentPublicKey, setPaymentPublicKey] = useState("");
 
 
-    const [BISON_SEQUENCER_ENDPOINT,setBISON_SEQUENCER_ENDPOINT] = useState("http://209.141.49.238:8008/");
-    const [btcContractEndpoint,setBtcContractEndpoint] = useState("http://209.141.49.238:8008/");
-    const [PIPE_endpoint,setPIPE_endpoint] = useState("http://209.141.49.238:5077/");
+    const [BISON_SEQUENCER_ENDPOINT,setBISON_SEQUENCER_ENDPOINT] = useState("https://testnet.bisonlabs.io/sequencer_endpoint");
+    const [btcContractEndpoint,setBtcContractEndpoint] = useState("https://testnet.bisonlabs.io/sequencer_endpoint");
+    const [PIPE_endpoint,setPIPE_endpoint] = useState("https://testnet.bisonlabs.io/pipe_endpoint");
     const [NETWORK,setNetwork] = useState("Testnet");
+    const [LABB_endpoint,setLABB_endpoint] = useState("https://testnet.bisonlabs.io/labbs_endpoint");
+    const [claim_endpoint,setClaim_endpoint] = useState("https://testnet.bisonlabs.io/labb_endpoint");
 
     return (
         <WalletContext.Provider value={{
@@ -28,6 +30,8 @@ export const WalletProvider = ({ children }) => {
             btcContractEndpoint,setBtcContractEndpoint,
             PIPE_endpoint,setPIPE_endpoint,
             NETWORK,setNetwork,
+            LABB_endpoint,setLABB_endpoint,
+            claim_endpoint,setClaim_endpoint,
         }}>
             {children}
         </WalletContext.Provider>

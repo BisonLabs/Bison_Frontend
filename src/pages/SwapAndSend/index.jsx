@@ -66,7 +66,7 @@ const SwapAndSend = () => {
       return;
     }
     if (NETWORK != 'Testnet' && receiptAddress.startsWith('bc1p')){
-    }else if (NETWORK == 'Testnet' && receiptAddress.startsWith('tb1q')){
+    }else if (NETWORK == 'Testnet' && receiptAddress.startsWith('tb1p')){
     }else{
       alert("receipt address must be ordinals address!");
       return;
@@ -79,7 +79,7 @@ const SwapAndSend = () => {
 
     // 如果tick是btc,那么amount从btc转化成sats
     let transferAmount = amount;
-    if (selectedTransferToken === 'btc' || selectedTransferToken === 'pipe' || selectedTransferToken === 'TESTpipe') {
+    if (selectedTransferToken === 'btc' || selectedTransferToken === 'pipe' || selectedTransferToken === 'TESTpipe' || selectedTransferToken === 'labb' || selectedTransferToken === 'LABB') {
       transferAmount = Math.round(parseFloat(amount) * 100000000); // 1 BTC = 100,000,000 sats
     } else {
       transferAmount = parseInt(amount, 10);
@@ -243,7 +243,7 @@ const SwapAndSend = () => {
 
       let adjustedSwapAmount = swapAmount;
 
-      if (selectedSwapToken1.toLowerCase() === "btc" || selectedSwapToken1.toLowerCase() === "pipe"||selectedSwapToken1.toLowerCase() === "testpipe") {
+      if (selectedSwapToken1.toLowerCase() === "btc"|| selectedSwapToken1.toLowerCase() === "labb"|| selectedSwapToken1.toLowerCase() === "LABB" || selectedSwapToken1.toLowerCase() === "pipe"||selectedSwapToken1.toLowerCase() === "testpipe") {
         adjustedSwapAmount = Math.round(swapAmount * 100000000); // 1 btc = 100,000,000 sats
       }
 
@@ -519,7 +519,6 @@ const SwapAndSend = () => {
   return (
     <Layout>
       <div className="w-full grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-10">
-
         <XBox isBackground={true} >
 
           <div style={{ display: 'flex' }}>
@@ -615,7 +614,7 @@ const SwapAndSend = () => {
                 justifyContent: 'flex-start',
               }}
             >
-              {selectedSwapToken2.toLowerCase() === "btc" || selectedSwapToken2.toLowerCase() === "pipe" || selectedSwapToken2.toLowerCase() === "testpipe" ? (amount2 / 100000000).toFixed(8) : amount2}
+              {selectedSwapToken2.toLowerCase() === "btc" || selectedSwapToken2.toLowerCase() === "pipe" || selectedSwapToken2.toLowerCase() === "testpipe" || selectedSwapToken2.toLowerCase() === "labb"  ? (amount2 / 100000000).toFixed(8) : amount2}
             </div>
 
             <select style={{
@@ -766,7 +765,7 @@ const SwapAndSend = () => {
                       </thead>
                       <tbody>
                         {contracts.map((contract, index) => {
-                          const balance = (contract.tick === 'btc' || contract.tick === 'TESTpipe'|| contract.tick === 'pipe')
+                          const balance = (contract.tick === 'btc' || contract.tick === 'TESTpipe'|| contract.tick === 'pipe'|| contract.tick === 'labb')
                             ? parseFloat((tokenBalances[contract.tick] || 0) / 100000000).toFixed(8)
                             : tokenBalances[contract.tick] || 0;
 
