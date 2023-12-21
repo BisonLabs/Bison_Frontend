@@ -209,12 +209,7 @@ const Bridge = () => {
       setWithdrawAmount(value);
     }
   };
-  const onPegOutSignAndSendMessageClick = async () => {
-    if (NETWORK != 'Testnet') {
-      alert("The mainnet is not online yet, waiting ");
-      return;
-    }
-  
+  const onPegOutSignAndSendMessageClick = async () => {  
     const nonceResponse = await fetch(`${BISON_SEQUENCER_ENDPOINT}/nonce/${ordinalsAddress}`);
     const nonceData = await nonceResponse.json();
     const nonce = nonceData.nonce + 1;
