@@ -585,7 +585,7 @@ export default function PipeBridge() {
                       Order expires in 1 hour. Once complete wait 1 block.
                       <br />
                       <strong>
-                        Send { data.amount} amount of PIPE <br/>from {ordinalsAddress} <br/>to {pipeResponse ? pipeResponse.address : "error"}
+                        Send { data.amount} PIPE tokens <br/>  from {ordinalsAddress} <br/>to {pipeResponse ? pipeResponse.address : "error"}
                         <br /> 
                         Last Deposit Status: {pipeResponse ? pipeResponse.status : ""} 
                         {pipeResponse && pipeResponse.status === "successful" && 
