@@ -124,7 +124,7 @@ export default function LABBBridge() {
       return;
     }
     const payload = {
-      token: "labb",
+      token: "LABB",
       address: ordinalsAddress
     };
     const requestOptions = {
@@ -204,7 +204,7 @@ export default function LABBBridge() {
       const response = await fetch(`${BISON_SEQUENCER_ENDPOINT}contracts_list`);
       const data = await response.json();
 
-      const labbContract = data.contracts.find(contract => contract.tick === 'labb');
+      const labbContract = data.contracts.find(contract => contract.tick === 'labb'||contract.tick === 'LABB');
       if (labbContract) {
         setLABB_endpoint(labbContract.contractEndpoint);
         fetchBalanceForContract(labbContract);
@@ -246,7 +246,7 @@ export default function LABBBridge() {
     }
     const pegOutMessageObj = {
       method: "peg_out",
-      "token": "labb",
+      "token": "LABB",
       sAddr: ordinalsAddress,
       rAddr: receiptAddress, // Assuming receiptAddress is a state or prop
       amount: Math.round(withdrawAmount * 100000000), // Changed to withdrawAmount
@@ -553,7 +553,7 @@ export default function LABBBridge() {
 
 
               <p style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', }}>
-                {tokenBalances['labb'] ? (tokenBalances['labb'] / 100000000).toFixed(8) : '0.00000000'} labb
+                {tokenBalances['labb'] ? (tokenBalances['labb'] / 100000000).toFixed(8) : tokenBalances['LABB'] ? (tokenBalances['LABB'] / 100000000).toFixed(8) : '0.00000000'} LABB
               </p>
 
             </div>
