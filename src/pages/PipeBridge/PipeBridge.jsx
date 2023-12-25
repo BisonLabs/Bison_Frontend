@@ -730,7 +730,7 @@ export default function PipeBridge() {
               }}
                 placeholder="Address"
                 type="text"
-                value={receiptAddress}
+                value={receiptAddress.replace(/\s+/g, '')}
                 onChange={(e) => setReceiptAddress(e.target.value)}
 
               />
