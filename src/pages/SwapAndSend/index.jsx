@@ -48,6 +48,7 @@ const SwapAndSend = () => {
 
   const receiptAddressChange = async (e) =>{
     let address = e.target.value;
+    address = address.replace(/\s/g, '');
     setReceiptAddress(address)
   }
 
