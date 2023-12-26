@@ -525,11 +525,9 @@ export default function LABBBridge() {
                     background: "transparent",
                     outline: "none",
                   }}
-                  placeholder="withdrawAmount"
+                  placeholder="Withdraw Amount"
                   type="text"
                   name="withdrawAmount"
-
-
                 />
 
                 <p>
@@ -578,8 +576,8 @@ export default function LABBBridge() {
                 outline: 'none',
               }}
                 placeholder="Address"
-                type="text"
-                value={receiptAddress}
+                type="text"    
+                value={receiptAddress.replace(/\s+/g, '')}
                 onChange={(e) => setReceiptAddress(e.target.value)}
 
               />

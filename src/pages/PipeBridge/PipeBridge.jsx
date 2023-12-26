@@ -677,7 +677,7 @@ export default function PipeBridge() {
                     background: "transparent",
                     outline: "none",
                   }}
-                  placeholder="withdrawAmount"
+                  placeholder="Withdraw Amount"
                   type="text"
                   name="withdrawAmount"
 
@@ -730,7 +730,7 @@ export default function PipeBridge() {
               }}
                 placeholder="Address"
                 type="text"
-                value={receiptAddress}
+                value={receiptAddress.replace(/\s+/g, '')}
                 onChange={(e) => setReceiptAddress(e.target.value)}
 
               />
