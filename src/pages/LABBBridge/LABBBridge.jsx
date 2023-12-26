@@ -525,11 +525,9 @@ export default function LABBBridge() {
                     background: "transparent",
                     outline: "none",
                   }}
-                  placeholder="withdrawAmount"
+                  placeholder="Withdraw Amount"
                   type="text"
                   name="withdrawAmount"
-
-
                 />
 
                 <p>

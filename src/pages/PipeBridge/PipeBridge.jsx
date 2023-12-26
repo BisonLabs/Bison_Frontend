@@ -677,7 +677,7 @@ export default function PipeBridge() {
                     background: "transparent",
                     outline: "none",
                   }}
-                  placeholder="withdrawAmount"
+                  placeholder="Withdraw Amount"
                   type="text"
                   name="withdrawAmount"
 
