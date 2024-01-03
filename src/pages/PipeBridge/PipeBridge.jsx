@@ -21,6 +21,7 @@ export default function PipeBridge() {
   const [isDepositConfirmed, setIsDepositConfirmed] = useState(false);
   const [remainingTime, setRemainingTime] = useState(null);
   const [endTime, setEndTime] = useState(null);
+  const [depositAmount, setDepositAmount] = useState(0);
   const [withdrawAmount, setWithdrawAmount] = useState(0);
   const [receiptAddress, setReceiptAddress] = useState("");
   const [tokenBalances, setTokenBalances] = useState({});
@@ -70,6 +71,13 @@ export default function PipeBridge() {
     }
   }
 
+  const handleDepositAmountChange = (event) => {
+    const value = parseFloat(event.target.value);
+    if (value >= 0) { // Only update the state if the value is non-negative
+      setDepositAmount(value);
+    }
+  };
+
   const handleWithdrawAmountChange = (event) => {
     const value = parseFloat(event.target.value);
     if (value >= 0) { // Only update the state if the value is non-negative
@@ -104,11 +112,47 @@ export default function PipeBridge() {
     const ec = new TextEncoder()
     const response = await fetch(`${PIPE_endpoint}/pipe_bridge_peg_in`, requestOptions);
     const responseData = await response.json();
+
+    console.log("Peg_In Response: ", responseData);
+
     setPipeResponse(responseData);
     if(!responseData.address){
       alert("pipe bridge peg in address null!");
       return;
     }
+
+    const nonceResponse = await fetch(`${BISON_SEQUENCER_ENDPOINT}/nonce/${ordinalsAddress}`);
+    const nonceData = await nonceResponse.json();
+    const nonce = nonceData.nonce + 1;
+
+    const pegInMessageObj = {
+      method: "pipe_peg_out",
+      token: "pipe",
+      sAddr: ordinalsAddress,
+      rAddr: responseData.address, // Assuming receiptAddress is a state or prop
+      // amount: Math.round(depositAmount), // Changed to depositAmount
+      amout: data.amount,
+      nonce: nonce,
+      sig: ""
+    };
+
+    const signMessageOptions = {
+      payload: {
+        network: {
+          type: NETWORK,
+        },
+        address: ordinalsAddress,
+        message: JSON.stringify(pegInMessageObj),
+      },
+      onFinish: (response) => {
+        pegInMessageObj.sig = response;
+        sendPegInMessage(pegInMessageObj);
+        setIsClicked(true); 
+      },
+      onCancel: () => alert("Request canceled."),
+    };
+    await signMessage(signMessageOptions);
+
     console.log("sign transfer address:"+ responseData.address+",amount: "+data.amount)
     
     // let all_utxo = [];
@@ -184,8 +228,25 @@ export default function PipeBridge() {
     //     };
     //     await signTransaction(signPsbtOptions);
     // }
-    setIsClicked(true); 
   };
+
+  const sendPegInMessage = async (message) => {
+    await fetch(`${BISON_SEQUENCER_ENDPOINT}/enqueue_transaction`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(message),
+    })
+      .then(response => response.json())
+      .then(data => {
+        alert(JSON.stringify(data));
+        fetchContracts();
+      })
+      .catch((error) => {
+        console.error('Error while sending the peg-In message:', error);
+      });
+  }
 
   const get_test_utxo = async (ordinalsAddress)  =>{
     const all_utxo = await fetch(`https://mempool.space/testnet/api/address/${ordinalsAddress}/utxo`);
@@ -615,6 +676,21 @@ export default function PipeBridge() {
                   }}>
                   Check Last Deposit
                 </button>
+                <a href="https://satsx.io/inscribe/pipe?template=&op=transfer" target="_blank">
+                  <button
+                    style={{
+                      backgroundImage: 'linear-gradient(136deg, #FF5722, #6EACFE)',
+                      padding: '9px 30px',
+                      borderRadius: '8px',
+                      color: 'white',
+                      height: '73px',
+                      fontSize: '23px',
+                      marginTop: '30px',
+                      marginLeft: '20px',
+                    }}>
+                    Go To Deposit
+                  </button>
+                </a>
               </div>
             }
 
