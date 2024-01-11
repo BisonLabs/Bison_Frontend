@@ -311,7 +311,170 @@ export default function LABBBridge() {
       });
   }
 
+ 
+  const fetchLabbSwapBalance = async (tick1,amount1) => {
+    const url = `https://testnet.bisonlabs.io/labb_swap_endpoint/pool_quote`;
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ sAddr: ordinalsAddress,'tick1':tick1,'amount1':amount1}), // Assuming ordinalsAddress is a state or prop
+      });
+      const data = await response.json();
+      setSwap(data)
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  }
+  const handleTick1AmountChange = async () => {
+    const btcAmount = document.getElementsByName("tick1")[0].value;
+    fetchLabbSwapBalance('btc',btcAmount*100000000);
+  }
+  
+  const transfer = async (tick) => {
+      const response = await fetch(`${BISON_SEQUENCER_ENDPOINT}contracts_list`);
+      const data = await response.json();
+      let contract = data.contracts.find(contract => contract.tick === 'btc');
+      let transferAmount=swap.tick1
+      if(tick!='btc'){
+        contract = data.contracts.find(contract => contract.tick === 'labb'||contract.tick === 'LABB');
+        transferAmount=swap.tick2
+      }
 
+       // 获取 nonce
+    const nonceResponse = await fetch(`${BISON_SEQUENCER_ENDPOINT}/nonce/${ordinalsAddress}`);
+    const nonceData = await nonceResponse.json();
+    const nonce = nonceData.nonce + 1; // 确保从JSON响应中正确地获取nonce值
+    const messageObj = {
+      method: "transfer",
+      sAddr: ordinalsAddress,
+      rAddr: swap.contract_address,
+      amt: transferAmount,
+      tick: tick,
+      nonce: nonce,
+      tokenContractAddress: contract.contractAddr, // 添加tokenContractAddress
+      sig: ""
+    };
+
+    // 先将messageObj发送到/gas_meter以获取gas数据
+    const gasResponse = await fetch(`${BISON_SEQUENCER_ENDPOINT}/gas_meter`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(messageObj),
+    });
+    const gasData = await gasResponse.json();
+
+    // 更新messageObj以包含gas数据
+    messageObj.gas_estimated = gasData.gas_estimated;
+    messageObj.gas_estimated_hash = gasData.gas_estimated_hash;
+    const signMessageOptions = {
+      payload: {
+        network: {
+          type: NETWORK,
+        },
+        address: ordinalsAddress,
+        message: JSON.stringify(messageObj),
+      },
+      onFinish: (response) => {
+        messageObj.sig = response;
+        onSendMessageClick(messageObj);
+      },
+      onCancel: () => alert("Canceled"),
+    };
+
+    await signMessage(signMessageOptions);
+
+
+  }
+
+  const onSendMessageClick = async (signedMessage) => {
+    // Make a HTTP POST request to /enqueue_transaction
+    await fetch(`${BISON_SEQUENCER_ENDPOINT}/enqueue_transaction`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(signedMessage),
+    })
+      .then(response => response.json())
+      .then(data => {
+        alert(JSON.stringify(data));
+        fetchContracts();
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+      });
+  }
+  const transferBTC = async () => {
+    transfer('btc')
+  }
+  const transferLABB = async () => {
+    transfer('labb')
+  }
+
+  const poolAdd = async () => {
+       // 获取 nonce
+    const nonceResponse = await fetch(`${BISON_SEQUENCER_ENDPOINT}/nonce/${ordinalsAddress}`);
+    const nonceData = await nonceResponse.json();
+    const nonce = nonceData.nonce + 1; // 确保从JSON响应中正确地获取nonce值
+    const messageObj = {
+      method: "pool_add",
+      sAddr: ordinalsAddress,
+      tick1: 'btc',
+      tick2: 'labb',
+      "amount1": swap.tick1,
+      "amount2": swap.tick2,
+      nonce: nonce,
+      proportion: (swap.tick1_balance / swap.tick1).toString(),
+      sig: ""
+    };
+
+    // 先将messageObj发送到/gas_meter以获取gas数据
+    const gasResponse = await fetch(`${BISON_SEQUENCER_ENDPOINT}/gas_meter`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(messageObj),
+    });
+    const gasData = await gasResponse.json();
+
+    // 更新messageObj以包含gas数据
+    messageObj.gas_estimated = gasData.gas_estimated;
+    messageObj.gas_estimated_hash = gasData.gas_estimated_hash;
+    const signMessageOptions = {
+      payload: {
+        network: {
+          type: NETWORK,
+        },
+        address: ordinalsAddress,
+        message: JSON.stringify(messageObj),
+      },
+      onFinish: (response) => {
+        messageObj.sig = response;
+        onSendMessageClick(messageObj);
+      },
+      onCancel: () => alert("Canceled"),
+    };
+
+    await signMessage(signMessageOptions);
+  }
+  useEffect(() => {
+    fetchLabbSwapBalance('btc',0);
+  }, []);
+  const [swap, setSwap] = useState({
+    tick1:0,
+    tick2:0,
+    tickswap:0,
+    contract_address:'',
+    proportion:0,
+    tick1_balance:0,
+    tick2_balance:0
+  });
   return (
     <>
       <Layout>
@@ -327,9 +490,94 @@ export default function LABBBridge() {
             >
               claim
             </button>
+            <div className="col-span-5">
+            <XBox isBackground={true} height={isClicked ? 500 : 400}>
+              <h3 className="">合约地址: {swap.contract_address} 交互比例: {swap.tickswap} 当前用户比例: {swap.proportion}  tick1: {swap.tick1_balance}   tick2: {swap.tick2_balance}</h3>
+              
+              BTC<input
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    color: "white",
+                    border: "none",
+                    background: "transparent",
+                    outline: "none",
+                  }}
+                  placeholder="btc Amount"
+                  type="text"
+                  name="tick1"
+                />
+                <button
+                  onClick={handleTick1AmountChange}
+                  style={{
+                    margin: '0px 10px',
+                    background: "white",
+                    color: 'black',
+                    padding: "13px",
+                    borderRadius: "10px",
 
+                  }} >
+                  commit
+                </button>
+
+                LABB<input 
+                  value={swap.tick2/100000000}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    color: "white",
+                    border: "none",
+                    background: "transparent",
+                    outline: "none",
+                  }}
+                  placeholder="labb amount"
+                  type="text"
+                  name="tick2"
+                />
+
+                <button
+                  onClick={transferBTC}
+                  style={{
+                    margin: '0px 10px',
+                    background: "white",
+                    color: 'black',
+                    padding: "13px",
+                    borderRadius: "10px",
+
+                  }} >
+                  transfer BTC
+                </button>
+                <button
+                  onClick={transferLABB}
+                  style={{
+                    margin: '0px 10px',
+                    background: "white",
+                    color: 'black',
+                    padding: "13px",
+                    borderRadius: "10px",
+
+                  }} >
+                  transfer LABB
+                </button>
+                
+
+                <button
+                  onClick={poolAdd}
+                  style={{
+                    margin: '0px 10px',
+                    background: "white",
+                    color: 'black',
+                    padding: "13px",
+                    borderRadius: "10px",
+
+                  }} >
+                  pool add
+                </button>
+            </XBox>
+            </div>
           <div className="col-span-5">
             <XBox isBackground={true} height={isClicked ? 500 : 400}>
+
               <h3 className="">Deposit</h3>
               <div
                 style={{
