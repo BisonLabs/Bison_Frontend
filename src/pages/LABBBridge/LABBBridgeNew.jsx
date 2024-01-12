@@ -541,7 +541,7 @@ export default function LABBBridge() {
             </button>
             <div className="col-span-5">
             <XBox isBackground={true} height={isClicked ? 500 : 400}>
-              <h3 className="">合约地址: {swap.contract_address} 交互比例: {swap.tickswap} 当前用户比例: {swap.proportion}  tick1: {swap.tick1_balance}   tick2: {swap.tick2_balance}</h3>
+              <h3 className="">Contract address: {swap.contract_address} Contract interaction ratio: {swap.tickswap} Current user proportion: {swap.proportion}  tick1: {swap.tick1_balance}   tick2: {swap.tick2_balance}</h3>
               
               BTC<input
                   style={{
