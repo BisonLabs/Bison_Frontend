@@ -539,6 +539,59 @@ export default function LABBBridge() {
             >
               claim
             </button>
+            <div className="col-span-5">
+            <XBox isBackground={true} height={isClicked ? 500 : 400}>
+              <h3 className="">合约地址: {swap.contract_address} 交互比例: {swap.tickswap} 当前用户比例: {swap.proportion}  tick1: {swap.tick1_balance}   tick2: {swap.tick2_balance}</h3>
+              
+              BTC<input
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    color: "white",
+                    border: "none",
+                    background: "transparent",
+                    outline: "none",
+                  }}
+                  placeholder="btc Amount"
+                  type="text"
+                  name="tick1"
+                />
+                <button
+                  onClick={handleTick1AmountChange}
+                  style={{
+                    margin: '0px 10px',
+                    background: "white",
+                    color: 'black',
+                    padding: "13px",
+                    borderRadius: "10px",
+
+                  }} >
+                  commit
+                </button>
+
+                LABB<input 
+                  value={swap.tick2/100000000}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    color: "white",
+                    border: "none",
+                    background: "transparent",
+                    outline: "none",
+                  }}
+                  placeholder="labb amount"
+                  type="text"
+                  name="tick2"
+                />
+              <div>
+                <button onClick={transferBTC} style={{ margin: '0px 10px', background: "white", color: 'black', padding: "13px", borderRadius: "10px" }}>transfer BTC</button>
+                <button onClick={transferLABB} style={{ margin: '0px 10px', background: "white", color: 'black', padding: "13px", borderRadius: "10px" }}>transfer LABB</button>
+                <button onClick={poolAdd} style={{ margin: '0px 10px', background: "white", color: 'black', padding: "13px", borderRadius: "10px" }}>pool add</button>
+
+                <button onClick={poolRemove} style={{ margin: '0px 10px', background: "white", color: 'black', padding: "13px", borderRadius: "10px" }}>pool remove 50%</button>
+              </div>
+            </XBox>
+            </div>
           <div className="col-span-5">
             <XBox isBackground={true} height={isClicked ? 500 : 400}>
 
