@@ -416,6 +416,55 @@ export default function LABBBridge() {
     transfer('labb')
   }
 
+  
+ const poolRemove= async () => {
+    // 获取 nonce
+  const nonceResponse = await fetch(`${BISON_SEQUENCER_ENDPOINT}/nonce/${ordinalsAddress}`);
+  const nonceData = await nonceResponse.json();
+  const nonce = nonceData.nonce + 1; // 确保从JSON响应中正确地获取nonce值
+  const messageObj = {
+    method: "pool_remove",
+    sAddr: ordinalsAddress,
+    tick1: 'btc',
+    tick2: 'labb',
+    "amount1": swap.tick1,
+    "amount2": swap.tick2,
+    percentage: "0.5",
+    nonce: nonce,
+    sig: ""
+  };
+
+  // 先将messageObj发送到/gas_meter以获取gas数据
+  const gasResponse = await fetch(`${BISON_SEQUENCER_ENDPOINT}/gas_meter`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(messageObj),
+  });
+  const gasData = await gasResponse.json();
+
+  // 更新messageObj以包含gas数据
+  messageObj.gas_estimated = gasData.gas_estimated;
+  messageObj.gas_estimated_hash = gasData.gas_estimated_hash;
+  const signMessageOptions = {
+    payload: {
+      network: {
+        type: NETWORK,
+      },
+      address: ordinalsAddress,
+      message: JSON.stringify(messageObj),
+    },
+    onFinish: (response) => {
+      messageObj.sig = response;
+      onSendMessageClick(messageObj);
+    },
+    onCancel: () => alert("Canceled"),
+  };
+
+  await signMessage(signMessageOptions);
+}
+
   const poolAdd = async () => {
        // 获取 nonce
     const nonceResponse = await fetch(`${BISON_SEQUENCER_ENDPOINT}/nonce/${ordinalsAddress}`);
@@ -534,45 +583,13 @@ export default function LABBBridge() {
                   type="text"
                   name="tick2"
                 />
+              <div>
+                <button onClick={transferBTC} style={{ margin: '0px 10px', background: "white", color: 'black', padding: "13px", borderRadius: "10px" }}>transfer BTC</button>
+                <button onClick={transferLABB} style={{ margin: '0px 10px', background: "white", color: 'black', padding: "13px", borderRadius: "10px" }}>transfer LABB</button>
+                <button onClick={poolAdd} style={{ margin: '0px 10px', background: "white", color: 'black', padding: "13px", borderRadius: "10px" }}>pool add</button>
 
-                <button
-                  onClick={transferBTC}
-                  style={{
-                    margin: '0px 10px',
-                    background: "white",
-                    color: 'black',
-                    padding: "13px",
-                    borderRadius: "10px",
-
-                  }} >
-                  transfer BTC
-                </button>
-                <button
-                  onClick={transferLABB}
-                  style={{
-                    margin: '0px 10px',
-                    background: "white",
-                    color: 'black',
-                    padding: "13px",
-                    borderRadius: "10px",
-
-                  }} >
-                  transfer LABB
-                </button>
-                
-
-                <button
-                  onClick={poolAdd}
-                  style={{
-                    margin: '0px 10px',
-                    background: "white",
-                    color: 'black',
-                    padding: "13px",
-                    borderRadius: "10px",
-
-                  }} >
-                  pool add
-                </button>
+                <button onClick={poolRemove} style={{ margin: '0px 10px', background: "white", color: 'black', padding: "13px", borderRadius: "10px" }}>pool remove 50%</button>
+              </div>
             </XBox>
             </div>
           <div className="col-span-5">
