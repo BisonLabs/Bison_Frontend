@@ -7,6 +7,8 @@ import NetworkOverview from "./pages/NetworkOverview";
 import BitmapBridge from "./pages/BitmapBridge";
 import PipeBridge from "./pages/PipeBridge/PipeBridge";
 import LABBBridge from "./pages/LABBBridge/LABBBridge.jsx";
+import LiquidityPool from "./pages/LiquidityPool/index.js";
+import 'tailwindcss/tailwind.css';
 
 
 function App() {
@@ -16,6 +18,7 @@ function App() {
         <Routes>
           <Route path="/bridge" element={<Bridge />} />
           <Route path="/swap-and-send" element={<SwapAndSend />} />
+          <Route path="/liquidity-pool" element={<LiquidityPool />} />
           <Route path="/bitmap-bridge" element={<BitmapBridge />} />
           <Route path="/bitmap-bridge/bridiging" element={<SwapBridge />} />
           <Route path="/network-overview" element={<NetworkOverview />} />
