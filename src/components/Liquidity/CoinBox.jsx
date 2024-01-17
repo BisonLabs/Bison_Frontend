@@ -6,7 +6,15 @@ const CoinBox = ({ isBackground, imgURL, center, height, data }) => {
   const [openSelect, setOpenSelect] = useState(false);
   const [openWithdraw, setOpenWithdraw] = useState(false);
   const handleOpenDetails = () => setOpenDetails(!openDetails);
-  const handleOpenSelect = () => setOpenSelect(!openSelect);
+
+  
+  const handleOpenSelect = () => {
+    setOpenSelect(!openSelect);
+    if(!openSelect){
+      //查询最新的
+      
+    }
+  }
   const handleOpenWithdraw = () => {
     setOpenDetails(!openDetails);
     setOpenWithdraw(!openWithdraw);
