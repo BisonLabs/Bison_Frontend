@@ -88,10 +88,10 @@ const CoinBox = ({ isBackground, imgURL, center, height, data }) => {
           </div>
           <div className="flex flex-col justify-between">
             <div style={{ fontSize: "1.1rem", color: "white" }}>
-              {data.coin_value1}
+              {data.coin_value1/100000000}
             </div>
             <div style={{ fontSize: "1.1rem", color: "white" }}>
-              {data.coin_value2}
+              {data.coin_value2/100000000}
             </div>
           </div>
         </div>
