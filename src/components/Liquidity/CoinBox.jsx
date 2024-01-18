@@ -1,42 +1,48 @@
 import React, { useState } from "react";
 import "./CoinBox.css";
 import { useWallet } from "../../WalletContext";
-import { signMessage} from "sats-connect";
+import { signMessage } from "sats-connect";
 
 const CoinBox = ({ isBackground, imgURL, center, height, data }) => {
   const [openDetails, setOpenDetails] = useState(false);
   const [openSelect, setOpenSelect] = useState(false);
   const [openWithdraw, setOpenWithdraw] = useState(false);
   const handleOpenDetails = () => setOpenDetails(!openDetails);
-  const {BISON_SEQUENCER_ENDPOINT,ordinalsAddress,NETWORK} = useWallet();
+  const { BISON_SEQUENCER_ENDPOINT, ordinalsAddress, NETWORK } = useWallet();
 
   const handleOpenSelect = () => {
     setOpenSelect(!openSelect);
-    if(!openSelect){
+    if (!openSelect) {
       //设置默认值
-      setToken1InputValue(data.coin_value1/100000000)
+      setToken1InputValue(data.coin_value1 / 100000000);
     }
-  }
-  
-  const transferToken1 = ()=>{
-    transfer(data.token_name1,parseInt(token1InputValue*100000000))
-  }
+  };
 
-  const transferToken2 = ()=>{
-    transfer(data.token_name2,parseInt(token1InputValue*100000000*data.token_value))
-  }
-  
-  
-  const transfer = async (tick,transferAmount) => {
+  const transferToken1 = () => {
+    transfer(data.token_name1, parseInt(token1InputValue * 100000000));
+  };
+
+  const transferToken2 = () => {
+    transfer(
+      data.token_name2,
+      parseInt(token1InputValue * 100000000 * data.token_value)
+    );
+  };
+
+  const transfer = async (tick, transferAmount) => {
     if (!ordinalsAddress) {
-      alert('Please Connect Wallet First');
+      alert("Please Connect Wallet First");
       return;
     }
     const response = await fetch(`${BISON_SEQUENCER_ENDPOINT}contracts_list`);
     const contracts = await response.json();
-    let contract = contracts.contracts.find(contract => contract.tick.toLowerCase() === tick.toLowerCase());
+    let contract = contracts.contracts.find(
+      (contract) => contract.tick.toLowerCase() === tick.toLowerCase()
+    );
     // 获取 nonce
-    const nonceResponse = await fetch(`${BISON_SEQUENCER_ENDPOINT}/nonce/${ordinalsAddress}`);
+    const nonceResponse = await fetch(
+      `${BISON_SEQUENCER_ENDPOINT}/nonce/${ordinalsAddress}`
+    );
     const nonceData = await nonceResponse.json();
     const nonce = nonceData.nonce + 1; // 确保从JSON响应中正确地获取nonce值
     const messageObj = {
@@ -47,7 +53,7 @@ const CoinBox = ({ isBackground, imgURL, center, height, data }) => {
       tick: tick,
       nonce: nonce,
       tokenContractAddress: contract.contractAddr, // 添加tokenContractAddress
-      sig: ""
+      sig: "",
     };
     // 先将messageObj发送到/gas_meter以获取gas数据
     const gasResponse = await fetch(`${BISON_SEQUENCER_ENDPOINT}/gas_meter`, {
@@ -77,15 +83,17 @@ const CoinBox = ({ isBackground, imgURL, center, height, data }) => {
       onCancel: () => alert("Canceled"),
     };
     await signMessage(signMessageOptions);
-  }
+  };
 
   const addLiquidity = async () => {
     if (!ordinalsAddress) {
-      alert('Please Connect Wallet First');
+      alert("Please Connect Wallet First");
       return;
     }
     // 获取 nonce
-    const nonceResponse = await fetch(`${BISON_SEQUENCER_ENDPOINT}/nonce/${ordinalsAddress}`);
+    const nonceResponse = await fetch(
+      `${BISON_SEQUENCER_ENDPOINT}/nonce/${ordinalsAddress}`
+    );
     const nonceData = await nonceResponse.json();
     const nonce = nonceData.nonce + 1; // 确保从JSON响应中正确地获取nonce值
     const messageObj = {
@@ -93,11 +101,13 @@ const CoinBox = ({ isBackground, imgURL, center, height, data }) => {
       sAddr: ordinalsAddress,
       tick1: data.token_name1,
       tick2: data.token_name2,
-      "amount1": parseInt(token1InputValue*100000000),
-      "amount2": parseInt(token1InputValue*100000000*data.token_value),
+      amount1: parseInt(token1InputValue * 100000000),
+      amount2: parseInt(token1InputValue * 100000000 * data.token_value),
       nonce: nonce,
-      proportion: ((token1InputValue*100000000)/data.coin_value1).toFixed(4).toString(),
-      sig: ""
+      proportion: ((token1InputValue * 100000000) / data.coin_value1)
+        .toFixed(4)
+        .toString(),
+      sig: "",
     };
 
     // 先将messageObj发送到/gas_meter以获取gas数据
@@ -129,7 +139,7 @@ const CoinBox = ({ isBackground, imgURL, center, height, data }) => {
     };
 
     await signMessage(signMessageOptions);
-  }
+  };
 
   const onSendMessageClick = async (signedMessage) => {
     // Make a HTTP POST request to /enqueue_transaction
@@ -140,14 +150,14 @@ const CoinBox = ({ isBackground, imgURL, center, height, data }) => {
       },
       body: JSON.stringify(signedMessage),
     })
-      .then(response => response.json())
-      .then(data => {
+      .then((response) => response.json())
+      .then((data) => {
         alert(JSON.stringify(data));
       })
       .catch((error) => {
-        console.error('Error:', error);
+        console.error("Error:", error);
       });
-  }
+  };
 
   const handleOpenWithdraw = () => {
     setOpenDetails(!openDetails);
@@ -181,7 +191,7 @@ const CoinBox = ({ isBackground, imgURL, center, height, data }) => {
           </p>
         </div>
         <div className="flex items-center justify-end gap-5 text-right">
-          {(data.index === 0 || data.index === 1) && (
+          {/* {(data.index === 0 || data.index === 1) && (
             <div>
               <button
                 className="rounded-md cursor-pointer items-center border border-1 border-[#EF7A54] text-[#EF7A54] hover:text-white hover:bg-[#EF7A54] px-3 py-1 h-[40px] flex justify-center"
@@ -190,7 +200,16 @@ const CoinBox = ({ isBackground, imgURL, center, height, data }) => {
                 Details
               </button>
             </div>
-          )}
+          )} */}
+
+          <div>
+            <button
+              className="rounded-md cursor-pointer items-center border border-1 border-[#EF7A54] text-[#EF7A54] hover:text-white hover:bg-[#EF7A54] px-3 py-1 h-[40px] flex justify-center"
+              onClick={handleOpenDetails}
+            >
+              Details
+            </button>
+          </div>
           <div>
             <button
               className="rounded-md cursor-pointer items-center border border-1 border-[#EF7A54] text-[#EF7A54] hover:text-white hover:bg-[#EF7A54] px-3 py-1 h-[40px] flex justify-center"
@@ -230,10 +249,10 @@ const CoinBox = ({ isBackground, imgURL, center, height, data }) => {
           </div>
           <div className="flex flex-col justify-between">
             <div style={{ fontSize: "1.1rem", color: "white" }}>
-              {data.coin_value1/100000000}
+              {data.coin_value1 / 100000000}
             </div>
             <div style={{ fontSize: "1.1rem", color: "white" }}>
-              {data.coin_value2/100000000}
+              {data.coin_value2 / 100000000}
             </div>
           </div>
         </div>
@@ -438,7 +457,9 @@ const CoinBox = ({ isBackground, imgURL, center, height, data }) => {
                     </span>
                     {data.token_name1.toUpperCase()}
                     <span className="text-[#898787] mx-1">per</span>
-                    <span className="mr-1">{data.token_name2.toUpperCase()}</span>
+                    <span className="mr-1">
+                      {data.token_name2.toUpperCase()}
+                    </span>
                     <button className="rounded-sm p-1 bg-[#222222]">
                       <img src="/img/coinbox/Vector.png" alt="vector" />
                     </button>
@@ -450,13 +471,22 @@ const CoinBox = ({ isBackground, imgURL, center, height, data }) => {
                   <p className="text-[#25A73A]">{data.income}</p>
                 </div>
                 <div className="w-full px-5 flex flex-col gap-5 text-[#EF7A54]">
-                  <button onClick={transferToken1} className="rounded-xl cursor-pointer items-center border border-1 text-xl border-[#EF7A54] hover:text-white hover:bg-[#EF7A54] px-3 py-1 h-[40px] flex justify-center mx-auto w-full">
+                  <button
+                    onClick={transferToken1}
+                    className="rounded-xl cursor-pointer items-center border border-1 text-xl border-[#EF7A54] hover:text-white hover:bg-[#EF7A54] px-3 py-1 h-[40px] flex justify-center mx-auto w-full"
+                  >
                     Deposit {data.token_name1.toUpperCase()}
                   </button>
-                  <button onClick={transferToken2} className="rounded-xl cursor-pointer items-center border border-1 text-xl border-[#EF7A54] hover:text-white hover:bg-[#EF7A54] px-3 py-1 h-[40px] flex justify-center mx-auto w-full">
+                  <button
+                    onClick={transferToken2}
+                    className="rounded-xl cursor-pointer items-center border border-1 text-xl border-[#EF7A54] hover:text-white hover:bg-[#EF7A54] px-3 py-1 h-[40px] flex justify-center mx-auto w-full"
+                  >
                     Deposit {data.token_name2.toUpperCase()}
                   </button>
-                  <button onClick={addLiquidity} className="rounded-xl cursor-pointer items-center border border-1 text-xl border-[#EF7A54] hover:text-white hover:bg-[#EF7A54] px-3 py-1 h-[40px] flex justify-center mx-auto w-full">
+                  <button
+                    onClick={addLiquidity}
+                    className="rounded-xl cursor-pointer items-center border border-1 text-xl border-[#EF7A54] hover:text-white hover:bg-[#EF7A54] px-3 py-1 h-[40px] flex justify-center mx-auto w-full"
+                  >
                     Add Liquidity
                   </button>
                 </div>
