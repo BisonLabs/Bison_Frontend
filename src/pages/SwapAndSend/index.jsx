@@ -315,7 +315,7 @@ const SwapAndSend = () => {
 
     let adjustedSwapAmount = swapAmount;
 
-    if (selectedSwapToken1.toLowerCase() === "btc" || selectedSwapToken1.toLowerCase() === 'pipe'|| selectedSwapToken1.toLowerCase() === 'testpipe') {
+    if (selectedSwapToken1.toLowerCase() === "btc" || selectedSwapToken1.toLowerCase() === 'pipe'|| selectedSwapToken1.toLowerCase() === 'testpipe'|| selectedSwapToken1.toLowerCase() === 'labb'|| selectedSwapToken1.toLowerCase() === 'ordi') {
       adjustedSwapAmount = Math.round(swapAmount * 100000000); // 1 btc = 100,000,000 sats
     }
     const amount1 = parseInt(adjustedSwapAmount);
