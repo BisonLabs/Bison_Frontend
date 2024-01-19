@@ -143,6 +143,68 @@ const CoinBox = ({ isBackground, imgURL, center, height, data }) => {
     await signMessage(signMessageOptions);
   };
 
+  //移除
+ const removeLiquidity= async () => {
+    if (!ordinalsAddress) {
+      alert("Please Connect Wallet First");
+      return;
+    }
+    if (data.pool_percentage === null || data.pool_percentage === undefined || Number(data.pool_percentage) === 0) {
+      alert("no percentage");
+      return;
+    }
+    if(withdrawAmount==0){
+      alert("select withdrawAmount percentage");
+      return;
+    }
+    const percentage= withdrawAmount>100?1:withdrawAmount/100.0
+    // 获取 nonce
+    const nonceResponse = await fetch(`${BISON_SEQUENCER_ENDPOINT}/nonce/${ordinalsAddress}`);
+    const nonceData = await nonceResponse.json();
+    const nonce = nonceData.nonce + 1; // 确保从JSON响应中正确地获取nonce值
+    const messageObj = {
+      method: "pool_remove",
+      sAddr: ordinalsAddress,
+      tick1: data.token_name1,
+      tick2: data.token_name2,
+      "amount1": 0,
+      "amount2": 0,
+      percentage: percentage.toString(),
+      nonce: nonce,
+      sig: ""
+    };
+
+    // 先将messageObj发送到/gas_meter以获取gas数据
+    const gasResponse = await fetch(`${BISON_SEQUENCER_ENDPOINT}/gas_meter`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(messageObj),
+    });
+    const gasData = await gasResponse.json();
+
+    // 更新messageObj以包含gas数据
+    messageObj.gas_estimated = gasData.gas_estimated;
+    messageObj.gas_estimated_hash = gasData.gas_estimated_hash;
+    const signMessageOptions = {
+      payload: {
+        network: {
+          type: NETWORK,
+        },
+        address: ordinalsAddress,
+        message: JSON.stringify(messageObj),
+      },
+      onFinish: (response) => {
+        messageObj.sig = response;
+        onSendMessageClick(messageObj);
+      },
+      onCancel: () => alert("Canceled"),
+    };
+
+    await signMessage(signMessageOptions);
+  }
+
   const onSendMessageClick = async (signedMessage) => {
     // Make a HTTP POST request to /enqueue_transaction
     await fetch(`${BISON_SEQUENCER_ENDPOINT}/enqueue_transaction`, {
@@ -154,7 +216,9 @@ const CoinBox = ({ isBackground, imgURL, center, height, data }) => {
     })
       .then((response) => response.json())
       .then((data) => {
-        alert(JSON.stringify(data));
+        setTimeout(() => {
+          alert(JSON.stringify(data));
+        }, 2000);
       })
       .catch((error) => {
         console.error("Error:", error);
@@ -251,10 +315,10 @@ const CoinBox = ({ isBackground, imgURL, center, height, data }) => {
           </div>
           <div className="flex flex-col justify-between">
             <div style={{ fontSize: "1.1rem", color: "white" }}>
-              {data.coin_value1 / 100000000}
+              {(data.coin_value1 / 100000000).toFixed(8)}
             </div>
             <div style={{ fontSize: "1.1rem", color: "white" }}>
-              {data.coin_value2 / 100000000}
+              {(data.coin_value2 / 100000000).toFixed(8)}
             </div>
           </div>
         </div>
@@ -324,7 +388,7 @@ const CoinBox = ({ isBackground, imgURL, center, height, data }) => {
                     <div className="flex items-center">
                       <span className="mr-3">
                         <p className="text-white text-base">
-                          {data.pool_percentage}
+                          {data.pool_percentage.toFixed(4)}
                         </p>
                       </span>
                     </div>
@@ -342,10 +406,10 @@ const CoinBox = ({ isBackground, imgURL, center, height, data }) => {
                   </div>
                   <div>
                     <p className="flex flex-raw text-sm m-4 justify-end mr-8">
-                      <span className="text-[#898787] mr-1">ETH</span>
-                      {data.ETH_unit}
-                      <span className="text-[#898787] mx-1">USDT</span>
-                      {data.USDT_unit}
+                      <span className="text-[#898787] mr-1">{data.token_name1.toUpperCase()}</span>
+                      {(data.coin_value1*data.pool_percentage/100000000).toFixed(8)}
+                      <span className="text-[#898787] mx-1">{data.token_name2.toUpperCase()}</span>
+                      {(data.coin_value2*data.pool_percentage/100000000).toFixed(8)}
                     </p>
                     <button
                       onClick={handleOpenWithdraw}
@@ -585,18 +649,29 @@ const CoinBox = ({ isBackground, imgURL, center, height, data }) => {
                   </button>
                 </div>
                 <div className="text-sm flex-row grid grid-cols-2 m-6 ml-8">
-                  <p className="text-[#898787] mr-1">Quantity</p>
+                  <p className="text-[#898787] mr-1">Price</p>
                   <div className="text-right mr-1">
                     <span className="text-[#898787] mr-1">
-                      {data.token_value}
+                      {(1 / data.token_value).toFixed(8)}
                     </span>
-                    {data.token_name1}
+                    {data.token_name1.toUpperCase()}
                     <span className="text-[#898787] mx-1">per</span>
-                    <span className="mr-1">{data.token_name2}</span>
+                    <span className="mr-1">{data.token_name2.toUpperCase()}</span>
+                  </div>
+                </div>
+                <div className="text-sm flex-row grid grid-cols-2 m-6 ml-8">
+                  <p className="text-[#898787] mr-1">Quantity</p>
+                  <div className="text-right mr-1">
+                    <p className="flex flex-raw text-sm m-4 justify-end mr-8">
+                        <span className="text-[#898787] mr-1">{data.token_name1.toUpperCase()}</span>
+                        {(data.coin_value1*data.pool_percentage/100000000).toFixed(8)}
+                        <span className="text-[#898787] mx-1">{data.token_name2.toUpperCase()}</span>
+                        {(data.coin_value2*data.pool_percentage/100000000).toFixed(8)}
+                      </p>
                   </div>
                 </div>
                 <div className="w-full px-5 flex flex-col">
-                  <button className="text-[#EF7A54] rounded-xl cursor-pointer items-center border border-1 text-xl border-[#EF7A54] hover:text-white hover:bg-[#EF7A54] px-3 py-1 h-[40px] flex justify-center mx-auto w-full">
+                  <button onClick={removeLiquidity} className="text-[#EF7A54] rounded-xl cursor-pointer items-center border border-1 text-xl border-[#EF7A54] hover:text-white hover:bg-[#EF7A54] px-3 py-1 h-[40px] flex justify-center mx-auto w-full">
                     Confirm
                   </button>
                 </div>
