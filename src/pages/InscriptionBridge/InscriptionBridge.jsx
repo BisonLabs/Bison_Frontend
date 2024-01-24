@@ -224,6 +224,129 @@ export default function InscriptionBridge() {
       });
   }
 
+
+  const amount2=10000;
+  const method="inscription_swap";
+  const contractAddress1="tb1pdy0zaspcgzjwv6gjqxl32dlkxhwtrnc4vg9tjpw8w7n5ngvudevs6yf7j4";
+  const contractAddress2="tb1pqzv3xwp40antfxdslnddj6zda4r5uwdh89qy7rrzjsat4etrvxxqq2fmjq";
+  const tick1="inscription";
+  const tick2="btc";
+  const expiry = new Date(new Date().getTime() + 1 * 60000).toISOString();
+
+  const handleSwapClick = async () => {
+    // 获取 nonce
+    const nonceResponse = await fetch(`${BISON_SEQUENCER_ENDPOINT}/nonce/${ordinalsAddress}`);
+    const nonceData = await nonceResponse.json();
+    const nonce = nonceData.nonce + 1;
+
+    const messageObj = {
+      method: method,
+      expiry: expiry,
+      tick1: tick1,
+      contractAddress1: contractAddress1,
+      inscription: selectedInscription,
+      tick2: tick2,
+      contractAddress2: contractAddress2,
+      amount2: amount2,
+      makerAddr: ordinalsAddress,
+      takerAddr: "",
+      nonce: nonce,
+      slippage: 0.02,
+      makerSig: "",
+      takerSig: ""
+    };
+    const messageObj2 = {
+      method: method,
+      expiry: expiry,
+      tick1: tick1,
+      contractAddress1:contractAddress1 ,
+      inscription: selectedInscription,
+      tick2: tick2,
+      contractAddress2: contractAddress2,
+      amount2: amount2,
+      makerAddr: "",
+      takerAddr: ordinalsAddress,
+      nonce: nonce,
+      slippage: 0.02,
+      makerSig: "",
+      takerSig: ""
+    };
+    // 先将messageObj发送到/gas_meter以获取gas数据
+    const gasResponse = await fetch(`${BISON_SEQUENCER_ENDPOINT}/gas_meter`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(messageObj),
+    });
+    const gasData = await gasResponse.json();
+    // 更新messageObj以包含gas数据
+    messageObj.gas_estimated = gasData.gas_estimated;
+    messageObj.gas_estimated_hash = gasData.gas_estimated_hash;
+    messageObj2.gas_estimated = gasData.gas_estimated;
+    messageObj2.gas_estimated_hash = gasData.gas_estimated_hash;
+
+    const signMessageOptions = {
+      payload: {
+        network: {
+          type: NETWORK,
+        },
+        address: ordinalsAddress,
+        message: JSON.stringify(messageObj),
+      },
+      onFinish: (response) => {
+        messageObj.makerSig = response;
+        alert("messageObj.makerSig:"+messageObj.makerSig)
+        taker2Sign(messageObj,messageObj2);
+      },
+      onCancel: () => alert("Swap canceled"),
+    };
+    await signMessage(signMessageOptions);
+  };
+
+  const taker2Sign= async(messageObj,messageObj2) =>{
+    
+    const signMessageOptions2 = {
+      payload: {
+        network: {
+          type: NETWORK,
+        },
+        address: ordinalsAddress,
+        message: JSON.stringify(messageObj2),
+      },
+      onFinish: (response) => {
+        messageObj.takerSig = response;
+        messageObj.takerAddr = ordinalsAddress;
+        alert("messageObj.takerSig:"+messageObj.takerSig)
+        onSwapMessageClick(messageObj);
+      },
+      onCancel: () => alert("Swap canceled"),
+    };
+    await signMessage(signMessageOptions2);
+
+  }
+
+  const onSwapMessageClick = async (signedMessage) => {
+    // Make a HTTP POST request to /enqueue_transaction
+    await fetch(`${BISON_SEQUENCER_ENDPOINT}/enqueue_transaction`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(signedMessage),
+    })
+      .then(response => response.json())
+      .then(data => {
+        alert(JSON.stringify(data));
+        setTimeout(() => {
+        }, 500);
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+      });
+  };
+
+
   return (
     <Layout>
       <div className="grid grid-cols-1 lg:grid-cols-5 2xl:grid-cols-5 gap-10">
@@ -318,6 +441,23 @@ export default function InscriptionBridge() {
         Confirm Withdraw
       </button>
     </div>
+  </div>
+
+
+
+
+  <div>
+    <button
+      onClick={handleSwapClick}
+      style={{
+        background: '#ff7248',
+        padding: '13px',
+        borderRadius: '35px',
+        marginTop: '27px',
+      }}>
+      Swap
+    </button>
+      
   </div>
 
 
