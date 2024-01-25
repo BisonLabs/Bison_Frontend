@@ -8,7 +8,9 @@ const CoinBox = ({ isBackground, imgURL, center, height, data }) => {
   const [openSelect, setOpenSelect] = useState(false);
   const [openWithdraw, setOpenWithdraw] = useState(false);
   const handleOpenDetails = () => setOpenDetails(!openDetails);
-  const { BISON_SEQUENCER_ENDPOINT, ordinalsAddress, NETWORK } = useWallet();
+  const { BISON_SEQUENCER_ENDPOINT, ordinalsAddress, xverseNetwork } = useWallet();
+
+  console.log("data: ", data);
 
   const handleOpenSelect = () => {
     setOpenSelect(!openSelect);
@@ -71,7 +73,7 @@ const CoinBox = ({ isBackground, imgURL, center, height, data }) => {
     const signMessageOptions = {
       payload: {
         network: {
-          type: NETWORK,
+          type: xverseNetwork,
         },
         address: ordinalsAddress,
         message: JSON.stringify(messageObj),
@@ -126,7 +128,7 @@ const CoinBox = ({ isBackground, imgURL, center, height, data }) => {
     const signMessageOptions = {
       payload: {
         network: {
-          type: NETWORK,
+          type: xverseNetwork,
         },
         address: ordinalsAddress,
         message: JSON.stringify(messageObj),
@@ -142,22 +144,28 @@ const CoinBox = ({ isBackground, imgURL, center, height, data }) => {
   };
 
   //移除
- const removeLiquidity= async () => {
+  const removeLiquidity = async () => {
     if (!ordinalsAddress) {
       alert("Please Connect Wallet First");
       return;
     }
-    if (data.pool_percentage === null || data.pool_percentage === undefined || Number(data.pool_percentage) === 0) {
+    if (
+      data.pool_percentage === null ||
+      data.pool_percentage === undefined ||
+      Number(data.pool_percentage) === 0
+    ) {
       alert("no percentage");
       return;
     }
-    if(withdrawAmount==0){
+    if (withdrawAmount == 0) {
       alert("select withdrawAmount percentage");
       return;
     }
-    const percentage= withdrawAmount>100?1:withdrawAmount/100.0
+    const percentage = withdrawAmount > 100 ? 1 : withdrawAmount / 100.0;
     // 获取 nonce
-    const nonceResponse = await fetch(`${BISON_SEQUENCER_ENDPOINT}/nonce/${ordinalsAddress}`);
+    const nonceResponse = await fetch(
+      `${BISON_SEQUENCER_ENDPOINT}/nonce/${ordinalsAddress}`
+    );
     const nonceData = await nonceResponse.json();
     const nonce = nonceData.nonce + 1; // 确保从JSON响应中正确地获取nonce值
     const messageObj = {
@@ -165,11 +173,11 @@ const CoinBox = ({ isBackground, imgURL, center, height, data }) => {
       sAddr: ordinalsAddress,
       tick1: data.token_name1,
       tick2: data.token_name2,
-      "amount1": 0,
-      "amount2": 0,
+      amount1: 0,
+      amount2: 0,
       percentage: percentage.toString(),
       nonce: nonce,
-      sig: ""
+      sig: "",
     };
 
     // 先将messageObj发送到/gas_meter以获取gas数据
@@ -188,7 +196,7 @@ const CoinBox = ({ isBackground, imgURL, center, height, data }) => {
     const signMessageOptions = {
       payload: {
         network: {
-          type: NETWORK,
+          type: xverseNetwork,
         },
         address: ordinalsAddress,
         message: JSON.stringify(messageObj),
@@ -201,7 +209,7 @@ const CoinBox = ({ isBackground, imgURL, center, height, data }) => {
     };
 
     await signMessage(signMessageOptions);
-  }
+  };
 
   const onSendMessageClick = async (signedMessage) => {
     // Make a HTTP POST request to /enqueue_transaction
@@ -345,9 +353,9 @@ const CoinBox = ({ isBackground, imgURL, center, height, data }) => {
                   >
                     <path
                       stroke="currentColor"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
                       d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
                     />
                   </svg>
@@ -404,10 +412,20 @@ const CoinBox = ({ isBackground, imgURL, center, height, data }) => {
                   </div>
                   <div>
                     <p className="flex flex-raw text-sm m-4 justify-end mr-8">
-                      <span className="text-[#898787] mr-1">{data.token_name1.toUpperCase()}</span>
-                      {(data.coin_value1*data.pool_percentage/100000000).toFixed(8)}
-                      <span className="text-[#898787] mx-1">{data.token_name2.toUpperCase()}</span>
-                      {(data.coin_value2*data.pool_percentage/100000000).toFixed(8)}
+                      <span className="text-[#898787] mr-1">
+                        {data.token_name1.toUpperCase()}
+                      </span>
+                      {(
+                        (data.coin_value1 * data.pool_percentage) /
+                        100000000
+                      ).toFixed(8)}
+                      <span className="text-[#898787] mx-1">
+                        {data.token_name2.toUpperCase()}
+                      </span>
+                      {(
+                        (data.coin_value2 * data.pool_percentage) /
+                        100000000
+                      ).toFixed(8)}
                     </p>
                     <button
                       onClick={handleOpenWithdraw}
@@ -455,9 +473,9 @@ const CoinBox = ({ isBackground, imgURL, center, height, data }) => {
                   >
                     <path
                       stroke="currentColor"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
                       d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
                     />
                   </svg>
@@ -567,7 +585,7 @@ const CoinBox = ({ isBackground, imgURL, center, height, data }) => {
             aria-hidden="true"
             className="fixed top-0 left-0 right-0 z-50 flex items-center justify-center w-full h-full text-white bg-black bg-opacity-90 "
           >
-            <div className="relative p-2 max-w-2xl border border-[#898787] rounded-2xl bg-[#121212] w-[508px] h-[380px]">
+            <div className="relative p-2 max-w-2xl border border-[#898787] rounded-2xl bg-[#121212] w-[508px]">
               <div className="grid items-center justify-between grid-cols-2">
                 <p className="text-base text-white m-4">Withdraw</p>
                 <button
@@ -584,9 +602,9 @@ const CoinBox = ({ isBackground, imgURL, center, height, data }) => {
                   >
                     <path
                       stroke="currentColor"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
                       d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
                     />
                   </svg>
@@ -631,13 +649,13 @@ const CoinBox = ({ isBackground, imgURL, center, height, data }) => {
                   <p className="text-[#898787] mr-1">Set Withdraw</p>
                 </div>
                 <div className="text-sm flex justify-between items-center m-6 ml-8">
-                  <div className="slider-container">
+                  <div className="slider-containder">
                     <input
                       type="range"
                       min="0"
                       max="100"
                       value={withdrawAmount}
-                      className="slider"
+                      className="slider text-yellow-200"
                       id="myRange"
                       onChange={handleWithdrawAmountChange}
                     />
@@ -654,22 +672,37 @@ const CoinBox = ({ isBackground, imgURL, center, height, data }) => {
                     </span>
                     {data.token_name1.toUpperCase()}
                     <span className="text-[#898787] mx-1">per</span>
-                    <span className="mr-1">{data.token_name2.toUpperCase()}</span>
+                    <span className="mr-1">
+                      {data.token_name2.toUpperCase()}
+                    </span>
                   </div>
                 </div>
-                <div className="text-sm flex-row grid grid-cols-2 m-6 ml-8">
+                <div className="text-sm flex-row grid grid-cols-2 m-6 ml-8 justify-between items-center">
                   <p className="text-[#898787] mr-1">Quantity</p>
                   <div className="text-right mr-1">
-                    <p className="flex flex-raw text-sm m-4 justify-end mr-8">
-                        <span className="text-[#898787] mr-1">{data.token_name1.toUpperCase()}</span>
-                        {(data.coin_value1*data.pool_percentage/100000000).toFixed(8)}
-                        <span className="text-[#898787] mx-1">{data.token_name2.toUpperCase()}</span>
-                        {(data.coin_value2*data.pool_percentage/100000000).toFixed(8)}
-                      </p>
+                    <p className="flex flex-raw text-sm m-4">
+                      <span className="text-[#898787] mr-1">
+                        {data.token_name1.toUpperCase()}
+                      </span>
+                      {(
+                        (data.coin_value1 * data.pool_percentage) /
+                        100000000
+                      ).toFixed(8)}
+                      <span className="text-[#898787] mx-1">
+                        {data.token_name2.toUpperCase()}
+                      </span>
+                      {(
+                        (data.coin_value2 * data.pool_percentage) /
+                        100000000
+                      ).toFixed(8)}
+                    </p>
                   </div>
                 </div>
-                <div className="w-full px-5 flex flex-col">
-                  <button onClick={removeLiquidity} className="text-[#EF7A54] rounded-xl cursor-pointer items-center border border-1 text-xl border-[#EF7A54] hover:text-white hover:bg-[#EF7A54] px-3 py-1 h-[40px] flex justify-center mx-auto w-full">
+                <div className="w-full px-5 flex flex-col my-5">
+                  <button
+                    onClick={removeLiquidity}
+                    className="text-[#EF7A54] rounded-xl cursor-pointer items-center border border-1 text-xl border-[#EF7A54] hover:text-white hover:bg-[#EF7A54] px-3 py-1 h-[40px] flex justify-center mx-auto w-full"
+                  >
                     Confirm
                   </button>
                 </div>

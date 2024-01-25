@@ -7,7 +7,7 @@ import io from "socket.io-client"; // 引入Socket.io客户端库
 
 
 const BitmapBridge = () => {
-  const { ordinalsAddress, paymentAddress ,NETWORK} = useWallet();
+  const { ordinalsAddress, paymentAddress ,xverseNetwork} = useWallet();
   const [isSelected, setIsSelected] = useState(false);
   const [selectedBitmapsItems, setSelectedBitmapsItems] = useState([]);
   const [BitmapBridgeItems, setBitmapBridgeItems] = useState([]); // 使用状态来存储从服务器获取的数据
@@ -16,7 +16,7 @@ const BitmapBridge = () => {
 
   useEffect(() => {
     let trac_base = io("https://api.trac.network");
-    if (NETWORK == 'Testnet'){
+    if (xverseNetwork == 'Testnet'){
       trac_base = io("https://api-testnet.trac.network");
     }
 
@@ -25,7 +25,7 @@ const BitmapBridge = () => {
         const items = await Promise.all(msg.result.map(async id => {
           const shortId = id.slice(0, 4) + '...' + id.slice(-6);
           let inscriptionURL = `https://ordinals.com/inscription/${id}`;
-          if (NETWORK == 'Testnet'){
+          if (xverseNetwork == 'Testnet'){
             inscriptionURL = `https://testnet.ordinals.com/inscription/${id}`;
           }
             
@@ -41,7 +41,7 @@ const BitmapBridge = () => {
           const outputValue = outputValueMatch ? parseInt(outputValueMatch[1], 10) : null;
 
           let  contentURL = `https://ordinals.com/content/${id}`;
-          if (NETWORK == 'Testnet'){
+          if (xverseNetwork == 'Testnet'){
             contentURL = `https://testnet.ordinals.com/content/${id}`;
           }
             

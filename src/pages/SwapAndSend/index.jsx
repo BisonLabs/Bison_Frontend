@@ -6,7 +6,7 @@ import { signMessage } from "sats-connect";
 
 
 const SwapAndSend = () => {
-  const { ordinalsAddress ,BISON_SEQUENCER_ENDPOINT,NETWORK} = useWallet(); // 使用useWallet钩子
+  const { ordinalsAddress ,BISON_SEQUENCER_ENDPOINT,xverseNetwork} = useWallet(); // 使用useWallet钩子
   const [contracts, setContracts] = useState([]);
   const [tokenBalances, setTokenBalances] = useState({});
   const [receiptAddress, setReceiptAddress] = useState("");
@@ -66,8 +66,8 @@ const SwapAndSend = () => {
       alert("The transfer amount must be greater than zero");
       return;
     }
-    if (NETWORK != 'Testnet' && receiptAddress.startsWith('bc1p')){
-    }else if (NETWORK == 'Testnet' && receiptAddress.startsWith('tb1p')){
+    if (xverseNetwork != 'Testnet' && receiptAddress.startsWith('bc1p')){
+    }else if (xverseNetwork == 'Testnet' && receiptAddress.startsWith('tb1p')){
     }else{
       alert("receipt address must be ordinals address!");
       return;
@@ -132,7 +132,7 @@ const SwapAndSend = () => {
     const signMessageOptions = {
       payload: {
         network: {
-          type: NETWORK,
+          type: xverseNetwork,
         },
         address: ordinalsAddress,
         message: JSON.stringify(messageObj),
@@ -388,7 +388,7 @@ const SwapAndSend = () => {
     const signMessageOptions = {
       payload: {
         network: {
-          type: NETWORK,
+          type: xverseNetwork,
         },
         address: ordinalsAddress,
         message: JSON.stringify(messageObj),
