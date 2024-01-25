@@ -14,8 +14,8 @@ export default function InscriptionBridge() {
   const [receiptAddress, setReceiptAddress] = useState("");
   const [withdrawAddress, setWithdrawAddress] = useState(0);
 
-
   useEffect(() => {
+    //Query the insertion list
     const fetchInscriptions = async () => {
       if (!ordinalsAddress) return;
       const payload = {
@@ -33,10 +33,10 @@ export default function InscriptionBridge() {
       const responseData = await response.json();
       if (Array.isArray(responseData) && responseData.length > 0) {
         setInscriptionList(responseData);
-        setSelectedInscription(responseData[0].inscription); // 将第一个铭刻赋值给 selectedInscription
+        setSelectedInscription(responseData[0].inscription); // default selectedInscription
       } else {
         setInscriptionList([]);
-        setSelectedInscription(""); // 若没有铭刻，则将 selectedInscription 设置为空字符串
+        setSelectedInscription(""); // If there is no inscription, set selectedInsertion to an empty string
       }
       
     };
@@ -66,6 +66,7 @@ export default function InscriptionBridge() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     };
+    //Bridge in request
     const response = await fetch(
       `https://testnet.bisonlabs.io/inscription_endpoint/bridge_peg_in`,
       requestOptions
@@ -88,11 +89,13 @@ export default function InscriptionBridge() {
       alert("Please set receive Wallet First");
       return;
     }
+    //Obtain the nonce of the address
     const nonceResponse = await fetch(
       `${BISON_SEQUENCER_ENDPOINT}/nonce/${ordinalsAddress}`
     );
     const nonceData = await nonceResponse.json();
     const nonce = nonceData.nonce + 1;
+    //transfer method,amt,tick,tokenContractAddress default fixed value
     const messageObj = {
       method: "inscription_transfer",
       sAddr: ordinalsAddress,
@@ -105,6 +108,7 @@ export default function InscriptionBridge() {
         "tb1pdy0zaspcgzjwv6gjqxl32dlkxhwtrnc4vg9tjpw8w7n5ngvudevs6yf7j4",
       sig: "",
     };
+    //Obtain gas fees
     const gasResponse = await fetch(
       `${BISON_SEQUENCER_ENDPOINT}/gas_meter`,
       {
@@ -135,6 +139,7 @@ export default function InscriptionBridge() {
     await signMessage(signMessageOptions);
   };
 
+  //send message
   const onSendMessageClick = async (signedMessage) => {
     await fetch(`${BISON_SEQUENCER_ENDPOINT}/enqueue_transaction`, {
       method: "POST",
@@ -187,7 +192,6 @@ export default function InscriptionBridge() {
     pegOutMessageObj.gas_estimated = gasData.gas_estimated;
     pegOutMessageObj.gas_estimated_hash = gasData.gas_estimated_hash;
 
-    const totalWithGas = pegOutMessageObj.gas_estimated; // 用户想要提款的金额加上估计的 gas 费用
     const signMessageOptions = {
       payload: {
         network: {
@@ -198,30 +202,13 @@ export default function InscriptionBridge() {
       },
       onFinish: (response) => {
         pegOutMessageObj.sig = response;
-        sendPegOutMessage(pegOutMessageObj);
+        onSendMessageClick(pegOutMessageObj);
 
       },
       onCancel: () => alert("Request canceled."),
     };
 
     await signMessage(signMessageOptions);
-  }
-
-  const sendPegOutMessage = async (message) => {
-    await fetch(`${BISON_SEQUENCER_ENDPOINT}/enqueue_transaction`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(message),
-    })
-      .then(response => response.json())
-      .then(data => {
-        alert(JSON.stringify(data));
-      })
-      .catch((error) => {
-        console.error('Error while sending the peg-out message:', error);
-      });
   }
 
 
@@ -234,7 +221,7 @@ export default function InscriptionBridge() {
   const expiry = new Date(new Date().getTime() + 1 * 60000).toISOString();
 
   const handleSwapClick = async () => {
-    // 获取 nonce
+    //Obtain nonce
     const nonceResponse = await fetch(`${BISON_SEQUENCER_ENDPOINT}/nonce/${ordinalsAddress}`);
     const nonceData = await nonceResponse.json();
     const nonce = nonceData.nonce + 1;
@@ -271,7 +258,7 @@ export default function InscriptionBridge() {
       makerSig: "",
       takerSig: ""
     };
-    // 先将messageObj发送到/gas_meter以获取gas数据
+    // Send messageObj to/gas first_ Meter to obtain gas data
     const gasResponse = await fetch(`${BISON_SEQUENCER_ENDPOINT}/gas_meter`, {
       method: "POST",
       headers: {
@@ -280,7 +267,7 @@ export default function InscriptionBridge() {
       body: JSON.stringify(messageObj),
     });
     const gasData = await gasResponse.json();
-    // 更新messageObj以包含gas数据
+    // Update messageObj to include gas data
     messageObj.gas_estimated = gasData.gas_estimated;
     messageObj.gas_estimated_hash = gasData.gas_estimated_hash;
     messageObj2.gas_estimated = gasData.gas_estimated;
@@ -318,34 +305,13 @@ export default function InscriptionBridge() {
         messageObj.takerSig = response;
         messageObj.takerAddr = ordinalsAddress;
         alert("messageObj.takerSig:"+messageObj.takerSig)
-        onSwapMessageClick(messageObj);
+        onSendMessageClick(messageObj);
       },
       onCancel: () => alert("Swap canceled"),
     };
     await signMessage(signMessageOptions2);
 
   }
-
-  const onSwapMessageClick = async (signedMessage) => {
-    // Make a HTTP POST request to /enqueue_transaction
-    await fetch(`${BISON_SEQUENCER_ENDPOINT}/enqueue_transaction`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(signedMessage),
-    })
-      .then(response => response.json())
-      .then(data => {
-        alert(JSON.stringify(data));
-        setTimeout(() => {
-        }, 500);
-      })
-      .catch((error) => {
-        console.error('Error:', error);
-      });
-  };
-
 
   return (
     <Layout>
@@ -462,12 +428,6 @@ export default function InscriptionBridge() {
 
 
 </div>
-
-
-
-
-
-
 
 
 
