@@ -6,7 +6,7 @@ import { getAddress, signMessage, sendBtcTransaction } from "sats-connect";
 
 
 const Bridge = () => {
-  const { NETWORK,ordinalsAddress, paymentAddress ,BISON_SEQUENCER_ENDPOINT,btcContractEndpoint,setBtcContractEndpoint} = useWallet(); // 使用useWallet钩子
+  const { xverseNetwork,ordinalsAddress, paymentAddress ,BISON_SEQUENCER_ENDPOINT,btcContractEndpoint,setBtcContractEndpoint} = useWallet(); // 使用useWallet钩子
   const [btcBalance, setBtcBalance] = useState(0); // 初始化BTC余额为0
   const [contracts, setContracts] = useState([]);
   const [depositeAmount, setDepositeAmount] = useState(0);
@@ -41,7 +41,7 @@ const Bridge = () => {
   const fetchBTCSum = async (Address) => {
     try {
       let  url = `https://mempool.space/api/address/${Address}`
-      if (NETWORK == 'Testnet') {
+      if (xverseNetwork == 'Testnet') {
         url=`https://mempool.space/testnet/api/address/${Address}`
       }
       const response = await fetch(url);
@@ -119,7 +119,7 @@ const Bridge = () => {
     const signMessageOptions = {
       payload: {
         network: {
-          type: NETWORK,
+          type: xverseNetwork,
         },
         address: paymentAddress,
         message: JSON.stringify(pegInMessageObj),
@@ -180,7 +180,7 @@ const Bridge = () => {
     const sendBtcOptions = {
       payload: {
         network: {
-          type: NETWORK,
+          type: xverseNetwork,
         },
         recipients: [
           {
@@ -247,7 +247,7 @@ const Bridge = () => {
     const signMessageOptions = {
       payload: {
         network: {
-          type: NETWORK,
+          type: xverseNetwork,
         },
         address: ordinalsAddress,
         message: JSON.stringify(pegOutMessageObj),
@@ -373,7 +373,7 @@ const Bridge = () => {
     const signMessageOptions = {
       payload: {
         network: {
-          type: NETWORK,
+          type: xverseNetwork,
         },
         address: ordinalsAddress,
         message: JSON.stringify(pegOutMessageObj),

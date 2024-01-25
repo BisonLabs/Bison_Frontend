@@ -8,7 +8,7 @@ const CoinBox = ({ isBackground, imgURL, center, height, data }) => {
   const [openSelect, setOpenSelect] = useState(false);
   const [openWithdraw, setOpenWithdraw] = useState(false);
   const handleOpenDetails = () => setOpenDetails(!openDetails);
-  const { BISON_SEQUENCER_ENDPOINT, ordinalsAddress, NETWORK } = useWallet();
+  const { BISON_SEQUENCER_ENDPOINT, ordinalsAddress, xverseNetwork } = useWallet();
 
   console.log("data: ", data);
 
@@ -73,7 +73,7 @@ const CoinBox = ({ isBackground, imgURL, center, height, data }) => {
     const signMessageOptions = {
       payload: {
         network: {
-          type: NETWORK,
+          type: xverseNetwork,
         },
         address: ordinalsAddress,
         message: JSON.stringify(messageObj),
@@ -128,7 +128,7 @@ const CoinBox = ({ isBackground, imgURL, center, height, data }) => {
     const signMessageOptions = {
       payload: {
         network: {
-          type: NETWORK,
+          type: xverseNetwork,
         },
         address: ordinalsAddress,
         message: JSON.stringify(messageObj),
@@ -196,7 +196,7 @@ const CoinBox = ({ isBackground, imgURL, center, height, data }) => {
     const signMessageOptions = {
       payload: {
         network: {
-          type: NETWORK,
+          type: xverseNetwork,
         },
         address: ordinalsAddress,
         message: JSON.stringify(messageObj),
