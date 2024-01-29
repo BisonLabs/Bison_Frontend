@@ -54,6 +54,7 @@ const Bridge = () => {
         (data.chain_stats.funded_txo_sum - data.chain_stats.spent_txo_sum) /
         100000000; // Converting satoshis to BTC
       setBtcBalance(btcBalance);
+      console.log(btcBalance);
       
     } catch (error) {
       console.error("Error:", error);
@@ -590,7 +591,6 @@ const Bridge = () => {
                 justifyContent: "space-between",
               }}
             >
-              {/* {btcBalance.toFixed(8) || balance.toFixed(8)} BTC */}
               {btcBalance.toFixed(8)} BTC
             </p>
           </div>

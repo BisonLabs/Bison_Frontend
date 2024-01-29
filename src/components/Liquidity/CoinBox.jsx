@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./CoinBox.css";
 import { useWallet } from "../../WalletContext";
 import { signMessage } from "sats-connect";
@@ -9,14 +9,145 @@ const CoinBox = ({ isBackground, imgURL, center, height, data }) => {
   const [openWithdraw, setOpenWithdraw] = useState(false);
   const handleOpenDetails = () => setOpenDetails(!openDetails);
   const {
-    BISON_SEQUENCER_ENDPOINT,
-    ordinalsAddress,
     xverseNetwork,
+    ordinalsAddress,
+    paymentAddress,
+
+    uniSatNetwork,
     currentAccount,
     unisatNetwork,
+
+    BISON_SEQUENCER_ENDPOINT,
+    btcContractEndpoint,
+    setBtcContractEndpoint,
   } = useWallet();
 
+  const [btcBalance, setBtcBalance] = useState(0); // 初始化BTC余额为0
+  const [contracts, setContracts] = useState([]);
+  const [depositeAmount, setDepositeAmount] = useState(0);
+  const [withdrawAmount, setWithdrawAmount] = useState(0);
+  const [tokenBalances, setTokenBalances] = useState({});
+  const [bBTCAmount, setBBTCAmount] = useState(0);
+  const [peginsData, setPeginsData] = useState([]);
+  const [pegOutsData, setPegOutsData] = useState([]);
+
   console.log("data: ", data);
+
+  useEffect(() => {
+    fetchContracts();
+    fetchBTCSum(paymentAddress || currentAccount);
+    fetchPegInData();
+    fetchPegOutData();
+  }, [paymentAddress, currentAccount]);
+
+  useEffect(() => {
+    fetchContracts();
+    fetchBTCSum(paymentAddress || currentAccount);
+    fetchPegInData();
+    fetchPegOutData();
+  }, []);
+
+  const fetchBTCSum = async (Address) => {
+    try {
+      let url = `https://mempool.space/api/address/${Address}`;
+      if (xverseNetwork == "Testnet") {
+        url = `https://mempool.space/testnet/api/address/${Address}`;
+      }
+      const response = await fetch(url);
+      const data = await response.json();
+      const btcBalance =
+        (data.chain_stats.funded_txo_sum - data.chain_stats.spent_txo_sum) /
+        100000000; // Converting satoshis to BTC
+      setBtcBalance(btcBalance);
+      console.log(btcBalance);
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
+
+  const fetchBalanceForContract = async (contract) => {
+    const url = `${contract.contractEndpoint}/balance`;
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ address: ordinalsAddress || currentAccount }), // Assuming ordinalsAddress is a state or prop
+      });
+      const data = await response.json();
+      setTokenBalances((prevBalances) => ({
+        ...prevBalances,
+        [contract.tick]: data.balance,
+      }));
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
+
+  const fetchContracts = async () => {
+    try {
+      const response = await fetch(`${BISON_SEQUENCER_ENDPOINT}contracts_list`);
+      const data = await response.json();
+      setContracts(data.contracts);
+      const tokenContracts = data.contracts.filter(
+        (contract) => contract.contractType === "Token"
+      );
+
+      // Fetch the balance for each contract
+      for (let contract of tokenContracts) {
+        await fetchBalanceForContract(contract);
+        if (contract.tick === "btc") {
+          setBtcContractEndpoint(contract.contractEndpoint);
+        }
+      }
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
+
+  //This is used to display pegin and pegout data
+
+  const fetchPegInData = async () => {
+    try {
+      const response = await fetch(
+        `${btcContractEndpoint}/peginsByAddr/${
+          ordinalsAddress || currentAccount
+        }`
+      );
+      const data = await response.json();
+
+      if (data.results) {
+        setPeginsData(data.results);
+        console.log("pegindata", data.results);
+      } else {
+        console.warn(data.message); // or handle this message in another way
+        setPeginsData([]); // set to an empty array or handle it differently
+      }
+    } catch (error) {
+      console.error("Error fetching peg-in data:", error);
+    }
+  };
+
+  const fetchPegOutData = async () => {
+    try {
+      const response = await fetch(
+        `${btcContractEndpoint}/pegoutsByAddr/${
+          ordinalsAddress || currentAccount
+        }`
+      );
+      const data = await response.json();
+
+      if (data.transactions) {
+        setPegOutsData(data.transactions);
+      } else {
+        console.warn(data.message); // or handle this message in another way
+        setPegOutsData([]); // set to an empty array or handle it differently
+      }
+    } catch (error) {
+      console.error("Error fetching peg-out data:", error);
+    }
+  };
 
   const handleOpenSelect = () => {
     setOpenSelect(!openSelect);
@@ -112,54 +243,65 @@ const CoinBox = ({ isBackground, imgURL, center, height, data }) => {
       return;
     }
     // 获取 nonce
-    const nonceResponse = await fetch(
-      `${BISON_SEQUENCER_ENDPOINT}/nonce/${ordinalsAddress}`
-    );
-    const nonceData = await nonceResponse.json();
-    const nonce = nonceData.nonce + 1; // 确保从JSON响应中正确地获取nonce值
-    const messageObj = {
-      method: "pool_add",
-      sAddr: ordinalsAddress,
-      tick1: data.token_name1,
-      tick2: data.token_name2,
-      amount1: parseInt(token1InputValue * 100000000),
-      amount2: parseInt(token1InputValue * 100000000 * data.token_value),
-      nonce: nonce,
-      proportion: ((token1InputValue * 100000000) / data.coin_value1)
-        .toFixed(4)
-        .toString(),
-      sig: "",
-    };
+    if (ordinalsAddress) {
+      const nonceResponse = await fetch(
+        `${BISON_SEQUENCER_ENDPOINT}/nonce/${ordinalsAddress}`
+      );
+      const nonceData = await nonceResponse.json();
+      const nonce = nonceData.nonce + 1; // 确保从JSON响应中正确地获取nonce值
+      const messageObj = {
+        method: "pool_add",
+        sAddr: ordinalsAddress,
+        tick1: data.token_name1,
+        tick2: data.token_name2,
+        amount1: parseInt(token1InputValue * 100000000),
+        amount2: parseInt(token1InputValue * 100000000 * data.token_value),
+        nonce: nonce,
+        proportion: ((token1InputValue * 100000000) / data.coin_value1)
+          .toFixed(4)
+          .toString(),
+        sig: "",
+      };
 
-    // 先将messageObj发送到/gas_meter以获取gas数据
-    const gasResponse = await fetch(`${BISON_SEQUENCER_ENDPOINT}/gas_meter`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(messageObj),
-    });
-    const gasData = await gasResponse.json();
-
-    // 更新messageObj以包含gas数据
-    messageObj.gas_estimated = gasData.gas_estimated;
-    messageObj.gas_estimated_hash = gasData.gas_estimated_hash;
-    const signMessageOptions = {
-      payload: {
-        network: {
-          type: xverseNetwork,
+      // 先将messageObj发送到/gas_meter以获取gas数据
+      const gasResponse = await fetch(`${BISON_SEQUENCER_ENDPOINT}/gas_meter`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-        address: ordinalsAddress,
-        message: JSON.stringify(messageObj),
-      },
-      onFinish: (response) => {
-        messageObj.sig = response;
-        onSendMessageClick(messageObj);
-      },
-      onCancel: () => alert("Canceled"),
-    };
+        body: JSON.stringify(messageObj),
+      });
+      const gasData = await gasResponse.json();
 
-    await signMessage(signMessageOptions);
+      // 更新messageObj以包含gas数据
+      messageObj.gas_estimated = gasData.gas_estimated;
+      messageObj.gas_estimated_hash = gasData.gas_estimated_hash;
+      const signMessageOptions = {
+        payload: {
+          network: {
+            type: xverseNetwork,
+          },
+          address: ordinalsAddress,
+          message: JSON.stringify(messageObj),
+        },
+        onFinish: (response) => {
+          messageObj.sig = response;
+          onSendMessageClick(messageObj);
+        },
+        onCancel: () => alert("Canceled"),
+      };
+
+      await signMessage(signMessageOptions);
+    }
+    if (currentAccount)
+      try {
+        await window.unisat.sendBitcoin(
+          data.contract_address,
+          parseInt(token1InputValue * 100000000)
+        );
+      } catch (e) {
+        console.log(e);
+      }
   };
 
   //移除
@@ -263,7 +405,6 @@ const CoinBox = ({ isBackground, imgURL, center, height, data }) => {
   };
 
   // handle Withdraw Amount
-  const [withdrawAmount, setWithdrawAmount] = useState(0);
 
   const handleWithdrawAmountChange = (event) => {
     setWithdrawAmount(event.target.value);
@@ -340,10 +481,19 @@ const CoinBox = ({ isBackground, imgURL, center, height, data }) => {
           </div>
           <div className="flex flex-col justify-between">
             <div style={{ fontSize: "1.1rem", color: "white" }}>
-              {(data.coin_value1 / 100000000).toFixed(8)}
+              {/* {(data.coin_value1 / 100000000).toFixed(8)} */}
+              {tokenBalances["btc"]
+                ? (tokenBalances["btc"] / 100000000).toFixed(8)
+                : "0.00000000"}
             </div>
             <div style={{ fontSize: "1.1rem", color: "white" }}>
-              {(data.coin_value2 / 100000000).toFixed(8)}
+              {/* {(data.coin_value2 / 100000000).toFixed(8)} */}
+              {tokenBalances["btc"]
+                ? (
+                    (tokenBalances["btc"] * data.token_value) /
+                    100000000
+                  ).toFixed(8)
+                : "0.00000000"}
             </div>
           </div>
         </div>
@@ -413,7 +563,10 @@ const CoinBox = ({ isBackground, imgURL, center, height, data }) => {
                     <div className="flex items-center">
                       <span className="mr-3">
                         <p className="text-white text-base">
-                          {data.pool_percentage.toFixed(4)}
+                          {/* {data.pool_percentage.toFixed(4)} */}
+                          {tokenBalances["btc"]
+                            ? (tokenBalances["btc"] / 100000000).toFixed(8)
+                            : "0.00000000"}
                         </p>
                       </span>
                     </div>
@@ -434,17 +587,26 @@ const CoinBox = ({ isBackground, imgURL, center, height, data }) => {
                       <span className="text-[#898787] mr-1">
                         {data.token_name1.toUpperCase()}
                       </span>
-                      {(
+                      {/* {(
                         (data.coin_value1 * data.pool_percentage) /
                         100000000
-                      ).toFixed(8)}
+                      ).toFixed(8)} */}
+                      {tokenBalances["btc"]
+                        ? (tokenBalances["btc"] / 100000000).toFixed(8)
+                        : "0.00000000"}
                       <span className="text-[#898787] mx-1">
                         {data.token_name2.toUpperCase()}
                       </span>
-                      {(
+                      {/* {(
                         (data.coin_value2 * data.pool_percentage) /
                         100000000
-                      ).toFixed(8)}
+                      ).toFixed(8)} */}
+                      {tokenBalances["btc"]
+                        ? (
+                            (tokenBalances["btc"] * data.token_value) /
+                            100000000
+                          ).toFixed(8)
+                        : "0.00000000"}
                     </p>
                     <button
                       onClick={handleOpenWithdraw}
