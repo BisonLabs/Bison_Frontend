@@ -9,6 +9,7 @@ import {
 
 import { getAddress } from "sats-connect";
 import { useWallet } from "../WalletContext";
+import { current } from "@reduxjs/toolkit";
 
 // Styles for animation
 const containerStyle = {
@@ -71,7 +72,6 @@ const Layout = ({ children }) => {
     setCurrentAccount,
     uniSatNetwork,
     setUniSatNetwork,
-
   } = useWallet();
 
   const handleClose = () => {
@@ -98,6 +98,11 @@ const Layout = ({ children }) => {
       onCancel: () => alert("Request Cancel"),
     };
     await getAddress(getAddressOptions);
+    console.log(
+      "ordinals address, payment address",
+      ordinalsAddress,
+      paymentAddress
+    );
     // 如果您有fetchContracts函数，请取消下面这行的注释
     // this.fetchContracts();
   };
@@ -107,34 +112,34 @@ const Layout = ({ children }) => {
   };
 
   // UniSat Wallet Connect and Disconnect
-  useEffect(() => {
-    const checkUnisat = async () => {
-      const unisat = window.unisat;
-      if (unisat) {
-        setIsUnisatInstalled(true);
-        try {
-          // Check the current network
-          const currentNetwork = await unisat.getNetwork();
-          setUniSatNetwork(currentNetwork);
+  // useEffect(() => {
+  //   const checkUnisat = async () => {
+  //     const unisat = window.unisat;
+  //     if (unisat) {
+  //       setIsUnisatInstalled(true);
+  //       try {
+  //         // Check the current network
+  //         const currentNetwork = await unisat.getNetwork();
+  //         setUniSatNetwork(currentNetwork);
 
-          // Check for accounts and balance
-          const accounts = await unisat.getAccounts();
-          if (accounts.length > 0) {
-            setIsConnected(true);
-            setCurrentAccount(accounts[0]);
-            const balance = await unisat.getBalance(accounts[0]);
-            setBalance(balance);
-          }
-        } catch (error) {
-          console.error("Error checking Unisat status:", error);
-          // message.error("Could not check Unisat status");
-          alert("Could not check Unisat status")
-        }
-      }
-    };
+  //         // Check for accounts and balance
+  //         const accounts = await unisat.getAccounts();
+  //         if (accounts.length > 0) {
+  //           setIsConnected(true);
+  //           setCurrentAccount(accounts[0]);
+  //           const balance = await unisat.getBalance(accounts[0]);
+  //           setBalance(balance);
+  //         }
+  //       } catch (error) {
+  //         console.error("Error checking Unisat status:", error);
+  //         // message.error("Could not check Unisat status");
+  //         alert("Could not check Unisat status");
+  //       }
+  //     }
+  //   };
 
-    checkUnisat();
-  }, []);
+  //   checkUnisat();
+  // }, []);
 
   const connectUniSatWallet = async () => {
     const unisat = window.unisat;
@@ -143,13 +148,15 @@ const Layout = ({ children }) => {
         const accounts = await unisat.requestAccounts();
         if (accounts.length > 0) {
           setIsConnected(true);
-          setCurrentAccount(accounts[0]);
+          await setCurrentAccount(accounts[0]);
           const newBalance = await unisat.getBalance(accounts[0]);
           setBalance(newBalance);
           handleClose();
+          
         }
+        console.log("current unisat wallet account", currentAccount);
       } catch (error) {
-        console.error('Error connecting to Unisat:', error);
+        console.error("Error connecting to Unisat:", error);
         // message.error('Could not connect to Unisat');
         alert("Could not connect to Unisat");
       }
@@ -157,16 +164,31 @@ const Layout = ({ children }) => {
   };
 
   const disconnectUniSatWallet = () => {
+    const handleAccountChanged = (newAddr) => {
+      if (newAddr && newAddr != currentAccount) {
+        setCurrentAccount(newAddr);
+      }
+    };
     setIsConnected(false);
-    setCurrentAccount('');
-    setBalance(0);
+    setCurrentAccount("");
+    setBalance("");
+    window.unisat.removeListener("accountsChanged", handleAccountChanged);
   };
 
   // Disconnect wallet
-  const disconnectWallet = () => {
-    disConnectXverseWallet();
+  // Show Disconnect Button
+  const [showDisconnectButton, setShowDisconnectButton] = useState(false);
+  const handleClickAddress = () => {
+    setShowDisconnectButton(!showDisconnectButton);
+  };
+
+  const disconnectWallet = async () => {
     disconnectUniSatWallet();
-  }
+    disConnectXverseWallet();
+    setShowDisconnectButton(false);
+    console.log("current unisat wallet account", currentAccount);
+  };
+
   useEffect(() => {
     setActiveMenu(location.pathname);
     preventBodyScroll();
@@ -264,8 +286,8 @@ const Layout = ({ children }) => {
             </span>
           </div>
         </div>
-        <div className="mr-10 items-center gap-4 hidden md:flex">
-          {!(ordinalsAddress || currentAccount) && (
+        <div className="mr-10 items-top gap-4 hidden md:flex">
+          {!(ordinalsAddress || isConnected) && (
             <button
               style={{
                 backgroundImage: "linear-gradient(136deg, #FF5722, #6EACFE)",
@@ -278,18 +300,36 @@ const Layout = ({ children }) => {
               Connect Wallet
             </button>
           )}
-          {(ordinalsAddress || currentAccount) && (
-            <button
-              style={{
-                backgroundImage: "linear-gradient(136deg, #FF5722, #6EACFE)",
-                padding: "9px 30px",
-                borderRadius: "8px",
-              }}
-              onClick={disconnectWallet}
-            >
-              {/* {ordinalsAddress ? formatAddress(ordinalsAddress) : "Connect Wallet"} */}
-              Disconnect Wallet
-            </button>
+          {/* {(ordinalsAddress || isConnected) && ( */}
+          {(ordinalsAddress || isConnected) && (
+            <div className="flex flex-col">
+              <button
+                style={{
+                  backgroundImage: "linear-gradient(136deg, #FF5722, #6EACFE)",
+                  padding: "9px 30px",
+                  borderRadius: "8px",
+                }}
+                onClick={handleClickAddress}
+              >
+                {/* {ordinalsAddress ? formatAddress(ordinalsAddress) : "Connect Wallet"} */}
+                {/* Disconnect Wallet */}
+                {formatAddress(ordinalsAddress) ||
+                  formatAddress(currentAccount)}
+              </button>
+              {showDisconnectButton && (
+                <button
+                  style={{
+                    backgroundImage:
+                      "linear-gradient(136deg, #FF5722, #6EACFE)",
+                    padding: "9px 30px",
+                    borderRadius: "8px",
+                  }}
+                  onClick={disconnectWallet}
+                >
+                  Disconnect
+                </button>
+              )}
+            </div>
           )}
         </div>
       </div>
@@ -424,9 +464,7 @@ const Layout = ({ children }) => {
                   <p className="text-[70px] font-medium pb-4">UniSat</p>
                 </button>
               </div>
-              <p className="text-sm py-5">
-                Click to connect wallet
-              </p>
+              <p className="text-sm py-5">Click to connect wallet</p>
             </div>
           </div>
         </div>
