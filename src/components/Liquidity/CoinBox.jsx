@@ -8,7 +8,13 @@ const CoinBox = ({ isBackground, imgURL, center, height, data }) => {
   const [openSelect, setOpenSelect] = useState(false);
   const [openWithdraw, setOpenWithdraw] = useState(false);
   const handleOpenDetails = () => setOpenDetails(!openDetails);
-  const { BISON_SEQUENCER_ENDPOINT, ordinalsAddress, xverseNetwork } = useWallet();
+  const {
+    BISON_SEQUENCER_ENDPOINT,
+    ordinalsAddress,
+    xverseNetwork,
+    currentAccount,
+    unisatNetwork,
+  } = useWallet();
 
   console.log("data: ", data);
 
@@ -20,8 +26,9 @@ const CoinBox = ({ isBackground, imgURL, center, height, data }) => {
     }
   };
 
-  const transferToken1 = () => {
-    transfer(data.token_name1, parseInt(token1InputValue * 100000000));
+  const transferToken1 = async () => {
+    (ordinalsAddress || currentAccount) &&
+      transfer(data.token_name1, parseInt(token1InputValue * 100000000));
   };
 
   const transferToken2 = () => {
@@ -32,59 +39,71 @@ const CoinBox = ({ isBackground, imgURL, center, height, data }) => {
   };
 
   const transfer = async (tick, transferAmount) => {
-    if (!ordinalsAddress) {
+    if (!(ordinalsAddress || currentAccount)) {
       alert("Please Connect Wallet First");
       return;
     }
-    const response = await fetch(`${BISON_SEQUENCER_ENDPOINT}contracts_list`);
-    const contracts = await response.json();
-    let contract = contracts.contracts.find(
-      (contract) => contract.tick.toLowerCase() === tick.toLowerCase()
-    );
-    // 获取 nonce
-    const nonceResponse = await fetch(
-      `${BISON_SEQUENCER_ENDPOINT}/nonce/${ordinalsAddress}`
-    );
-    const nonceData = await nonceResponse.json();
-    const nonce = nonceData.nonce + 1; // 确保从JSON响应中正确地获取nonce值
-    const messageObj = {
-      method: "transfer",
-      sAddr: ordinalsAddress,
-      rAddr: data.contract_address,
-      amt: transferAmount,
-      tick: tick,
-      nonce: nonce,
-      tokenContractAddress: contract.contractAddr, // 添加tokenContractAddress
-      sig: "",
-    };
-    // 先将messageObj发送到/gas_meter以获取gas数据
-    const gasResponse = await fetch(`${BISON_SEQUENCER_ENDPOINT}/gas_meter`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(messageObj),
-    });
-    const gasData = await gasResponse.json();
-
-    // 更新messageObj以包含gas数据
-    messageObj.gas_estimated = gasData.gas_estimated;
-    messageObj.gas_estimated_hash = gasData.gas_estimated_hash;
-    const signMessageOptions = {
-      payload: {
-        network: {
-          type: xverseNetwork,
+    if (ordinalsAddress) {
+      const response = await fetch(`${BISON_SEQUENCER_ENDPOINT}contracts_list`);
+      const contracts = await response.json();
+      let contract = contracts.contracts.find(
+        (contract) => contract.tick.toLowerCase() === tick.toLowerCase()
+      );
+      // 获取 nonce
+      const nonceResponse = await fetch(
+        `${BISON_SEQUENCER_ENDPOINT}/nonce/${ordinalsAddress}`
+      );
+      const nonceData = await nonceResponse.json();
+      const nonce = nonceData.nonce + 1; // 确保从JSON响应中正确地获取nonce值
+      const messageObj = {
+        method: "transfer",
+        sAddr: ordinalsAddress,
+        rAddr: data.contract_address,
+        amt: transferAmount,
+        tick: tick,
+        nonce: nonce,
+        tokenContractAddress: contract.contractAddr, // 添加tokenContractAddress
+        sig: "",
+      };
+      // 先将messageObj发送到/gas_meter以获取gas数据
+      const gasResponse = await fetch(`${BISON_SEQUENCER_ENDPOINT}/gas_meter`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-        address: ordinalsAddress,
-        message: JSON.stringify(messageObj),
-      },
-      onFinish: (response) => {
-        messageObj.sig = response;
-        onSendMessageClick(messageObj);
-      },
-      onCancel: () => alert("Canceled"),
-    };
-    await signMessage(signMessageOptions);
+        body: JSON.stringify(messageObj),
+      });
+      const gasData = await gasResponse.json();
+
+      // 更新messageObj以包含gas数据
+      messageObj.gas_estimated = gasData.gas_estimated;
+      messageObj.gas_estimated_hash = gasData.gas_estimated_hash;
+      const signMessageOptions = {
+        payload: {
+          network: {
+            type: xverseNetwork,
+          },
+          address: ordinalsAddress,
+          message: JSON.stringify(messageObj),
+        },
+        onFinish: (response) => {
+          messageObj.sig = response;
+          onSendMessageClick(messageObj);
+        },
+        onCancel: () => alert("Canceled"),
+      };
+      await signMessage(signMessageOptions);
+    }
+
+    if (currentAccount)
+      try {
+        await window.unisat.sendBitcoin(
+          data.contract_address,
+          parseInt(token1InputValue * 100000000)
+        );
+      } catch (e) {
+        console.log(e);
+      }
   };
 
   const addLiquidity = async () => {
