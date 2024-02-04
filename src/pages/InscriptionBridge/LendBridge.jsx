@@ -142,7 +142,7 @@ export default function LendBridge() {
       );
       const nonceData = await nonceResponse.json();
       const nonce = nonceData.nonce + 1;
-      const filteredBorrowerList = borrowerList.filter(item => item.status !== 'termination');
+      const filteredBorrowerList = borrowerList.filter(item => item.status == 'ing');
       if(filteredBorrowerList.length==0){
         alert("no borrower record");
         return;
