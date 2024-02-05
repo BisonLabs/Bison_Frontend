@@ -209,7 +209,7 @@ export default function LendBridge() {
      const lenderContractAddr="tb1p938g8dt7pr5hhty7smf3ykrf5qrd533xa5f7vpdjxf30hlq03aqsv5g2va";
      const tick1="btc";
      const expiry = new Date(new Date().getTime() + 1 * 60000).toISOString();
-     const contractExpireTime = new Date(new Date().getTime() + 1 * 60000*60).toISOString();
+     const contractExpireTime = new Date(new Date().getTime() + 1 * 60000*5).toISOString();
      //获取amount2和tick2
      const tick2=selectedAsset.split("-")[0]
      const amount2=selectedAsset.split("-")[1]
