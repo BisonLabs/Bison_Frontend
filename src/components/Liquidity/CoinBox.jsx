@@ -8,7 +8,13 @@ const CoinBox = ({ isBackground, imgURL, center, height, data }) => {
   const [openSelect, setOpenSelect] = useState(false);
   const [openWithdraw, setOpenWithdraw] = useState(false);
   const handleOpenDetails = () => setOpenDetails(!openDetails);
-  const { BISON_SEQUENCER_ENDPOINT, ordinalsAddress, NETWORK } = useWallet();
+  const {
+    BISON_SEQUENCER_ENDPOINT,
+    ordinalsAddress,
+    NETWORK,
+    isXverseWalletConnected,
+    isUniSatWalletConnected,
+  } = useWallet();
 
   console.log("data: ", data);
 
@@ -70,21 +76,32 @@ const CoinBox = ({ isBackground, imgURL, center, height, data }) => {
     // 更新messageObj以包含gas数据
     messageObj.gas_estimated = gasData.gas_estimated;
     messageObj.gas_estimated_hash = gasData.gas_estimated_hash;
-    const signMessageOptions = {
-      payload: {
-        network: {
-          type: NETWORK,
+    if (isXverseWalletConnected) {
+      const signMessageOptions = {
+        payload: {
+          network: {
+            type: NETWORK,
+          },
+          address: ordinalsAddress,
+          message: JSON.stringify(messageObj),
         },
-        address: ordinalsAddress,
-        message: JSON.stringify(messageObj),
-      },
-      onFinish: (response) => {
-        messageObj.sig = response;
-        onSendMessageClick(messageObj);
-      },
-      onCancel: () => alert("Canceled"),
-    };
-    await signMessage(signMessageOptions);
+        onFinish: (response) => {
+          messageObj.sig = response;
+          onSendMessageClick(messageObj);
+        },
+        onCancel: () => alert("Canceled"),
+      };
+      await signMessage(signMessageOptions);
+    }
+    if (isUniSatWalletConnected) {
+      const unisat = window.unisat;
+      try {
+        await unisat.signMessage(JSON.stringify(messageObj));
+      } catch (e) {
+        alert("Canceled");
+        console.log(e);
+      }
+    }
   };
 
   const addLiquidity = async () => {
@@ -125,22 +142,33 @@ const CoinBox = ({ isBackground, imgURL, center, height, data }) => {
     // 更新messageObj以包含gas数据
     messageObj.gas_estimated = gasData.gas_estimated;
     messageObj.gas_estimated_hash = gasData.gas_estimated_hash;
-    const signMessageOptions = {
-      payload: {
-        network: {
-          type: NETWORK,
+    if (isXverseWalletConnected) {
+      const signMessageOptions = {
+        payload: {
+          network: {
+            type: NETWORK,
+          },
+          address: ordinalsAddress,
+          message: JSON.stringify(messageObj),
         },
-        address: ordinalsAddress,
-        message: JSON.stringify(messageObj),
-      },
-      onFinish: (response) => {
-        messageObj.sig = response;
-        onSendMessageClick(messageObj);
-      },
-      onCancel: () => alert("Canceled"),
-    };
+        onFinish: (response) => {
+          messageObj.sig = response;
+          onSendMessageClick(messageObj);
+        },
+        onCancel: () => alert("Canceled"),
+      };
 
-    await signMessage(signMessageOptions);
+      await signMessage(signMessageOptions);
+    }
+    if(isUniSatWalletConnected) {
+      const unisat = window.unisat;
+      try {
+        await unisat.signMessage(JSON.stringify(messageObj));
+      } catch (e) {
+        alert("Canceled");
+        console.log(e);
+      }
+    }
   };
 
   //移除
