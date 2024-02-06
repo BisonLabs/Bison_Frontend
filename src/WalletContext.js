@@ -30,6 +30,8 @@ export const WalletProvider = ({ children }) => {
     "https://testnet.bisonlabs.io/pipe_endpoint"
   );
   const [NETWORK, setNetwork] = useState("Testnet");
+  const [xverseNetwork, setxverseNetwork] = useState("Testnet");
+  
   const [LABB_endpoint, setLABB_endpoint] = useState(
     "https://testnet.bisonlabs.io/labbs_endpoint"
   );
@@ -68,6 +70,8 @@ export const WalletProvider = ({ children }) => {
         setLABB_endpoint,
         claim_endpoint,
         setClaim_endpoint,
+        xverseNetwork,
+        setxverseNetwork
       }}
     >
       {children}

@@ -7,6 +7,7 @@ import { getAddress, signMessage, sendBtcTransaction } from "sats-connect";
 const Bridge = () => {
   const {
     NETWORK,
+    xverseNetwork,
     ordinalsAddress,
     paymentAddress,
     BISON_SEQUENCER_ENDPOINT,

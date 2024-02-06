@@ -12,6 +12,7 @@ const CoinBox = ({ isBackground, imgURL, center, height, data }) => {
     BISON_SEQUENCER_ENDPOINT,
     ordinalsAddress,
     NETWORK,
+    xverseNetwork,
     isXverseWalletConnected,
     isUniSatWalletConnected,
   } = useWallet();
