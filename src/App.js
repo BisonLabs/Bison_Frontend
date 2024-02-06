@@ -8,6 +8,8 @@ import BitmapBridge from "./pages/BitmapBridge";
 import PipeBridge from "./pages/PipeBridge/PipeBridge";
 import LABBBridge from "./pages/LABBBridge/LABBBridge.jsx";
 import LiquidityPool from "./pages/LiquidityPool/index.js";
+import InscriptionBridge from "./pages/InscriptionBridge/InscriptionBridge.jsx";
+import LendBridge from "./pages/InscriptionBridge/LendBridge.jsx";
 import 'tailwindcss/tailwind.css';
 
 
@@ -24,6 +26,8 @@ function App() {
           <Route path="/network-overview" element={<NetworkOverview />} />
           <Route path="/pipe-bridge" element={<PipeBridge />} />
           <Route path="/labb-bridge" element={<LABBBridge />} />
+          <Route path="/insc-bridge" element={<InscriptionBridge />} />
+          <Route path="/lend-bridge" element={<LendBridge />} />
           <Route path="*" element={<Navigate to="/bridge" />} />
         </Routes>
       </div>

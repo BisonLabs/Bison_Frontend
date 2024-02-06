@@ -224,7 +224,7 @@ const CoinBox = ({ isBackground, imgURL, center, height, data }) => {
     const signMessageOptions = {
       payload: {
         network: {
-          type: NETWORK,
+          type: xverseNetwork,
         },
         address: ordinalsAddress,
         message: JSON.stringify(messageObj),
