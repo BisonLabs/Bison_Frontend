@@ -6,7 +6,10 @@ import { signMessage } from "sats-connect";
 
 
 const SwapAndSend = () => {
-  const { ordinalsAddress ,BISON_SEQUENCER_ENDPOINT,NETWORK} = useWallet(); // 使用useWallet钩子
+  const { ordinalsAddress ,
+    BISON_SEQUENCER_ENDPOINT,NETWORK, 
+    isXverseWalletConnected,
+    isUniSatWalletConnected,} = useWallet(); // 使用useWallet钩子
   const [contracts, setContracts] = useState([]);
   const [tokenBalances, setTokenBalances] = useState({});
   const [receiptAddress, setReceiptAddress] = useState("");
@@ -129,23 +132,38 @@ const SwapAndSend = () => {
       }
     }
 
-    const signMessageOptions = {
-      payload: {
-        network: {
-          type: NETWORK,
+    if (isXverseWalletConnected) {
+      const signMessageOptions = {
+        payload: {
+          network: {
+            type: NETWORK,
+          },
+          address: ordinalsAddress,
+          message: JSON.stringify(messageObj),
         },
-        address: ordinalsAddress,
-        message: JSON.stringify(messageObj),
-      },
-      onFinish: (response) => {
-        messageObj.sig = response;
-        onSendMessageClick(messageObj);
-      },
-      onCancel: () => alert("Canceled"),
-    };
+        onFinish: (response) => {
+          messageObj.sig = response;
+          onSendMessageClick(messageObj);
+        },
+        onCancel: () => alert("Canceled"),
+      };
 
+      
     await signMessage(signMessageOptions);
+    }
 
+    if (isUniSatWalletConnected) {
+      const unisat = window.unisat;
+      try {
+        const response = await unisat.signMessage(JSON.stringify(messageObj), "bip322-simple");
+        messageObj.makerSig = response;
+        onSwapMessageClick(messageObj);
+        fetchContracts();
+      } catch (e) {
+        alert("Canceled");
+        console.log(e);
+      }
+    }
   }
 
 
@@ -329,13 +347,11 @@ const SwapAndSend = () => {
     const contractAddress1 = contract1 ? contract1.contractAddr : "";
     const contractAddress2 = contract2 ? contract2.contractAddr : "";
 
+    console.log("contractAddr1", contractAddress1, contractAddress2);
     // 获取 nonce
     const nonceResponse = await fetch(`${BISON_SEQUENCER_ENDPOINT}/nonce/${ordinalsAddress}`);
     const nonceData = await nonceResponse.json();
     const nonce = nonceData.nonce + 1;
-
-
-
 
 
     const messageObj = {
@@ -385,24 +401,37 @@ const SwapAndSend = () => {
     messageObj.gas_estimated = gasData.gas_estimated;
     messageObj.gas_estimated_hash = gasData.gas_estimated_hash;
 
-    const signMessageOptions = {
-      payload: {
-        network: {
-          type: NETWORK,
+    if (isXverseWalletConnected) {
+      const signMessageOptions = {
+        payload: {
+          network: {
+            type: NETWORK,
+          },
+          address: ordinalsAddress,
+          message: JSON.stringify(messageObj),
         },
-        address: ordinalsAddress,
-        message: JSON.stringify(messageObj),
-      },
-      onFinish: (response) => {
+        onFinish: (response) => {
+          messageObj.makerSig = response;
+          onSwapMessageClick(messageObj);
+          fetchContracts();
+        },
+        onCancel: () => alert("Swap canceled"),
+      };
+
+      await signMessage(signMessageOptions);
+    }
+    if (isUniSatWalletConnected) {
+      const unisat = window.unisat;
+      try {
+        const response = await unisat.signMessage(JSON.stringify(messageObj), "bip322-simple");
         messageObj.makerSig = response;
         onSwapMessageClick(messageObj);
         fetchContracts();
-      },
-      onCancel: () => alert("Swap canceled"),
-    };
-
-    await signMessage(signMessageOptions);
-
+      } catch (e) {
+        alert("Canceled");
+        console.log(e);
+      }
+    }
   };
 
 

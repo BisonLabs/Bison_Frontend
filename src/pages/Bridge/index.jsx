@@ -67,6 +67,7 @@ const Bridge = () => {
         body: JSON.stringify({ address: ordinalsAddress }), // Assuming ordinalsAddress is a state or prop
       });
       const data = await response.json();
+      console.log(contract.tick, data.balance);
       setTokenBalances((prevBalances) => ({
         ...prevBalances,
         [contract.tick]: data.balance,
@@ -160,7 +161,7 @@ const Bridge = () => {
     if (isUniSatWalletConnected) {
       const unisat = window.unisat;
       try {
-        await unisat.signMessage(JSON.stringify(pegInMessageObj));
+        await unisat.signMessage(JSON.stringify(pegInMessageObj), "bip322-simple");
         // pegInMessageObj.sig = response;
 
         // Find the contract related to BTC
@@ -302,18 +303,45 @@ const Bridge = () => {
       alert("You don't have enough BTC to cover the withdrawal and gas fees.");
       return;
     }
-    const signMessageOptions = {
-      payload: {
-        network: {
-          type: NETWORK,
-        },
-        address: ordinalsAddress,
-        message: JSON.stringify(pegOutMessageObj),
-      },
-      onFinish: (response) => {
-        pegOutMessageObj.sig = response;
 
-        // Assuming the same contract is used for both peg-in and peg-out operations
+    if (isXverseWalletConnected) {
+      const signMessageOptions = {
+        payload: {
+          network: {
+            type: NETWORK,
+          },
+          address: ordinalsAddress,
+          message: JSON.stringify(pegOutMessageObj),
+        },
+        onFinish: (response) => {
+          pegOutMessageObj.sig = response;
+
+          // Assuming the same contract is used for both peg-in and peg-out operations
+          const btcContract = contracts.find(
+            (contract) => contract.tick === "btc"
+          );
+
+          if (btcContract) {
+            const endpoint = btcContract.contractEndpoint;
+
+            // Use this endpoint to send the peg-out message
+            sendPegOutMessage(pegOutMessageObj, endpoint);
+          } else {
+            console.error("BTC contract not found.");
+          }
+        },
+        onCancel: () => alert("Request canceled."),
+      };
+
+      await signMessage(signMessageOptions);
+    }
+    if (isUniSatWalletConnected) {
+      const unisat = window.unisat;
+      try {
+        await unisat.signMessage(JSON.stringify(pegOutMessageObj), "bip322-simple");
+        // pegInMessageObj.sig = response;
+
+        // Find the contract related to BTC
         const btcContract = contracts.find(
           (contract) => contract.tick === "btc"
         );
@@ -321,16 +349,16 @@ const Bridge = () => {
         if (btcContract) {
           const endpoint = btcContract.contractEndpoint;
 
-          // Use this endpoint to send the peg-out message
+          // Use this endpoint to send the message
           sendPegOutMessage(pegOutMessageObj, endpoint);
         } else {
           console.error("BTC contract not found.");
         }
-      },
-      onCancel: () => alert("Request canceled."),
-    };
-
-    await signMessage(signMessageOptions);
+      } catch (e) {
+        alert("Canceled");
+        console.log(e);
+      }
+    }
   };
 
   const sendPegOutMessage = async (message, endpoint) => {
@@ -374,7 +402,7 @@ const Bridge = () => {
     }
   };
 
-  console.log("peginsData", peginsData);
+  // console.log("peginsData", peginsData);
 
   const fetchPegOutData = async () => {
     try {

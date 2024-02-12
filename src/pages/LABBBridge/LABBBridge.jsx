@@ -78,7 +78,7 @@ export default function LABBBridge() {
     }
   };
   const handlePegIn = async () => {
-
+    console.log('handlePegin', ordinalsAddress);
     if (!ordinalsAddress) {
       alert('Please Connect Wallet First'); // 或者使用更高级的弹窗提示
       return;
@@ -270,6 +270,7 @@ export default function LABBBridge() {
 
     const totalWithGas = pegOutMessageObj.gas_estimated; // 用户想要提款的金额加上估计的 gas 费用
 
+    console.log("totalWithGas", tokenBalances['btc'], totalWithGas);
     if (tokenBalances['btc'] < totalWithGas) {
       alert("You don't have enough BTC to cover the withdrawal and gas fees.");
       return;

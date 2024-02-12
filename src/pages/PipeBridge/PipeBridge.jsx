@@ -16,7 +16,14 @@ export default function PipeBridge() {
   });
 
   const [isClicked, setIsClicked] = useState(false);
-  const { ordinalsAddress, paymentAddress,PIPE_endpoint,setPIPE_endpoint,BISON_SEQUENCER_ENDPOINT,NETWORK} = useWallet();
+  const { ordinalsAddress, 
+    paymentAddress,
+    PIPE_endpoint,
+    setPIPE_endpoint,
+    BISON_SEQUENCER_ENDPOINT,
+    NETWORK,
+    isXverseWalletConnected,
+    isUniSatWalletConnected,} = useWallet();
   const [pipeResponse, setPipeResponse] = useState(null);
   const [isDepositConfirmed, setIsDepositConfirmed] = useState(false);
   const [remainingTime, setRemainingTime] = useState(null);
@@ -135,24 +142,37 @@ export default function PipeBridge() {
       nonce: nonce,
       sig: ""
     };
-
-    const signMessageOptions = {
-      payload: {
-        network: {
-          type: NETWORK,
+    
+    if (isXverseWalletConnected) {
+      const signMessageOptions = {
+        payload: {
+          network: {
+            type: NETWORK,
+          },
+          address: ordinalsAddress,
+          message: JSON.stringify(pegInMessageObj),
         },
-        address: ordinalsAddress,
-        message: JSON.stringify(pegInMessageObj),
-      },
-      onFinish: (response) => {
+        onFinish: (response) => {
+          pegInMessageObj.sig = response;
+          sendPegInMessage(pegInMessageObj);
+          setIsClicked(true); 
+        },
+        onCancel: () => alert("Request canceled."),
+      };
+      await signMessage(signMessageOptions);
+    }
+    if (isUniSatWalletConnected) {
+      const unisat = window.unisat;
+      try {
+        const response = await unisat.signMessage(JSON.stringify(pegInMessageObj));
         pegInMessageObj.sig = response;
         sendPegInMessage(pegInMessageObj);
         setIsClicked(true); 
-      },
-      onCancel: () => alert("Request canceled."),
-    };
-    await signMessage(signMessageOptions);
-
+      } catch (e) {
+        alert("Canceled");
+        console.log(e);
+      }
+    }
     console.log("sign transfer address:"+ responseData.address+",amount: "+data.amount)
     
     // let all_utxo = [];
@@ -498,23 +518,37 @@ export default function PipeBridge() {
       alert("You don't have enough BTC to cover the withdrawal and gas fees.");
       return;
     }
-    const signMessageOptions = {
-      payload: {
-        network: {
-          type: NETWORK,
+
+    if (isXverseWalletConnected) {
+      const signMessageOptions = {
+        payload: {
+          network: {
+            type: NETWORK,
+          },
+          address: ordinalsAddress,
+          message: JSON.stringify(pegOutMessageObj),
         },
-        address: ordinalsAddress,
-        message: JSON.stringify(pegOutMessageObj),
-      },
-      onFinish: (response) => {
+        onFinish: (response) => {
+          pegOutMessageObj.sig = response;
+          sendPegOutMessage(pegOutMessageObj);
+
+        },
+        onCancel: () => alert("Request canceled."),
+      };
+
+      await signMessage(signMessageOptions);
+    }
+    if (isUniSatWalletConnected) {
+      const unisat = window.unisat;
+      try {
+        const response = await unisat.signMessage(JSON.stringify(pegOutMessageObj));
         pegOutMessageObj.sig = response;
         sendPegOutMessage(pegOutMessageObj);
-
-      },
-      onCancel: () => alert("Request canceled."),
-    };
-
-    await signMessage(signMessageOptions);
+      } catch (e) {
+        alert("Canceled");
+        console.log(e);
+      }
+    }
   }
 
   const sendPegOutMessage = async (message) => {
