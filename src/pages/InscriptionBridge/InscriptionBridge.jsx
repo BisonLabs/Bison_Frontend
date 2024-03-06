@@ -11,6 +11,7 @@ export default function InscriptionBridge() {
   const [response, setResponse] = useState(null);
   const [isClicked, setIsClicked] = useState(false);
   const [selectedInscription, setSelectedInscription] = useState("");
+  const [selectedInscription2, setSelectedInscription2] = useState("");
   const [receiptAddress, setReceiptAddress] = useState("");
   const [withdrawAddress, setWithdrawAddress] = useState(0);
 
@@ -34,6 +35,9 @@ export default function InscriptionBridge() {
       if (Array.isArray(responseData) && responseData.length > 0) {
         setInscriptionList(responseData);
         setSelectedInscription(responseData[0].inscription); // default selectedInscription
+        if(responseData.length>1){
+          setSelectedInscription2(responseData[1].inscription);
+        }
       } else {
         setInscriptionList([]);
         setSelectedInscription(""); // If there is no inscription, set selectedInsertion to an empty string
@@ -225,13 +229,17 @@ export default function InscriptionBridge() {
     const nonceResponse = await fetch(`${BISON_SEQUENCER_ENDPOINT}/nonce/${ordinalsAddress}`);
     const nonceData = await nonceResponse.json();
     const nonce = nonceData.nonce + 1;
+    let insc = selectedInscription;
+    if (selectedInscription2 !== "") {
+      insc = insc + "," + selectedInscription2;
+    }
 
     const messageObj = {
       method: method,
       expiry: expiry,
       tick1: tick1,
       contractAddress1: contractAddress1,
-      inscription: selectedInscription,
+      inscription: insc,
       tick2: tick2,
       contractAddress2: contractAddress2,
       amount2: amount2,
@@ -247,7 +255,7 @@ export default function InscriptionBridge() {
       expiry: expiry,
       tick1: tick1,
       contractAddress1:contractAddress1 ,
-      inscription: selectedInscription,
+      inscription: insc,
       tick2: tick2,
       contractAddress2: contractAddress2,
       amount2: amount2,
