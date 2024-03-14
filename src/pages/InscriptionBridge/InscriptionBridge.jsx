@@ -1,9 +1,8 @@
 /* global BigInt */
-import React, { useState, useEffect } from "react";
-import Layout from "../../components/Layout";
-import XBox from "../../components/XBox";
-import { useWallet } from "../../WalletContext";
+import React, { useEffect, useState } from "react";
 import { signMessage } from "sats-connect";
+import { useWallet } from "../../WalletContext";
+import Layout from "../../components/Layout";
 
 export default function InscriptionBridge() {
   const { NETWORK, ordinalsAddress, BISON_SEQUENCER_ENDPOINT } = useWallet();

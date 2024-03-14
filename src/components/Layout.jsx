@@ -1,11 +1,10 @@
-import React, { useState, useEffect, useRef } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faEllipsisH,
   faArrowLeft,
-  faArrowRight,
+  faArrowRight
 } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import React, { useEffect, useRef, useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 
 import { getAddress } from "sats-connect";
 import { useWallet } from "../WalletContext";
@@ -407,7 +406,7 @@ const Layout = ({ children }) => {
                   />
                   <p className="text-[70px] font-medium pb-4">verse</p>
                 </button>
-                <button
+                {/* <button
                   onClick={onUniSatWalletConnectClick}
                   className="flex justify-center items-center border border-white w-80 rounded-3xl px-5 my-5"
                 >
@@ -417,7 +416,7 @@ const Layout = ({ children }) => {
                     className="h-20"
                   />
                   <p className="text-[70px] font-medium pb-4">UniSat</p>
-                </button>
+                </button> */}
               </div>
               <p className="text-sm py-5">Click to connect wallet</p>
             </div>
