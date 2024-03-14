@@ -15,7 +15,7 @@ export default function LABBBridge() {
   });
 
   const [isClicked, setIsClicked] = useState(false);
-  const { ordinalsAddress, paymentAddress,BISON_SEQUENCER_ENDPOINT,claim_endpoint,LABB_endpoint,setLABB_endpoint,NETWORK} = useWallet();
+  const { ordinalsAddress, paymentAddress,BISON_SEQUENCER_ENDPOINT,claim_endpoint,LABB_endpoint,setLABB_endpoint,xverseNetwork} = useWallet();
   const [isDepositConfirmed, setIsDepositConfirmed] = useState(false);
   const [remainingTime, setRemainingTime] = useState(null);
   const [endTime, setEndTime] = useState(null);
@@ -277,7 +277,7 @@ export default function LABBBridge() {
     const signMessageOptions = {
       payload: {
         network: {
-          type: NETWORK,
+          type: xverseNetwork,
         },
         address: ordinalsAddress,
         message: JSON.stringify(pegOutMessageObj),

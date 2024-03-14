@@ -6,7 +6,7 @@ import { signMessage } from "sats-connect";
 
 
 const SwapAndSend = () => {
-  const { ordinalsAddress ,BISON_SEQUENCER_ENDPOINT,NETWORK} = useWallet(); // 使用useWallet钩子
+  const { ordinalsAddress ,BISON_SEQUENCER_ENDPOINT,xverseNetwork} = useWallet(); // 使用useWallet钩子
   const [contracts, setContracts] = useState([]);
   const [tokenBalances, setTokenBalances] = useState({});
   const [receiptAddress, setReceiptAddress] = useState("");
@@ -66,8 +66,8 @@ const SwapAndSend = () => {
       alert("The transfer amount must be greater than zero");
       return;
     }
-    if (NETWORK != 'Testnet' && receiptAddress.startsWith('bc1p')){
-    }else if (NETWORK == 'Testnet' && receiptAddress.startsWith('tb1p')){
+    if (xverseNetwork != 'Testnet' && receiptAddress.startsWith('bc1p')){
+    }else if (xverseNetwork == 'Testnet' && receiptAddress.startsWith('tb1p')){
     }else{
       alert("receipt address must be ordinals address!");
       return;
@@ -80,7 +80,7 @@ const SwapAndSend = () => {
 
     // 如果tick是btc,那么amount从btc转化成sats
     let transferAmount = amount;
-    if (selectedTransferToken === 'btc' || selectedTransferToken === 'pipe' || selectedTransferToken === 'TESTpipe' || selectedTransferToken === 'labb' || selectedTransferToken === 'LABB') {
+    if (selectedTransferToken === 'btc' || selectedTransferToken === 'pipe' || selectedTransferToken === 'TESTpipe' || selectedTransferToken === 'labb' || selectedTransferToken === 'ordi' || selectedTransferToken === 'LABB') {
       transferAmount = Math.round(parseFloat(amount) * 100000000); // 1 BTC = 100,000,000 sats
     } else {
       transferAmount = parseInt(amount, 10);
@@ -132,7 +132,7 @@ const SwapAndSend = () => {
     const signMessageOptions = {
       payload: {
         network: {
-          type: NETWORK,
+          type: xverseNetwork,
         },
         address: ordinalsAddress,
         message: JSON.stringify(messageObj),
@@ -244,7 +244,7 @@ const SwapAndSend = () => {
 
       let adjustedSwapAmount = swapAmount;
 
-      if (selectedSwapToken1.toLowerCase() === "btc"|| selectedSwapToken1.toLowerCase() === "labb"|| selectedSwapToken1.toLowerCase() === "LABB" || selectedSwapToken1.toLowerCase() === "pipe"||selectedSwapToken1.toLowerCase() === "testpipe") {
+      if (selectedSwapToken1.toLowerCase() === "btc"|| selectedSwapToken1.toLowerCase() === "labb"||selectedSwapToken1.toLowerCase() === "ordi"||selectedSwapToken1.toLowerCase() === "pipe"||selectedSwapToken1.toLowerCase() === "testpipe") {
         adjustedSwapAmount = Math.round(swapAmount * 100000000); // 1 btc = 100,000,000 sats
       }
 
@@ -315,7 +315,7 @@ const SwapAndSend = () => {
 
     let adjustedSwapAmount = swapAmount;
 
-    if (selectedSwapToken1.toLowerCase() === "btc" || selectedSwapToken1.toLowerCase() === 'pipe'|| selectedSwapToken1.toLowerCase() === 'testpipe') {
+    if (selectedSwapToken1.toLowerCase() === "btc" || selectedSwapToken1.toLowerCase() === 'pipe'|| selectedSwapToken1.toLowerCase() === 'testpipe'|| selectedSwapToken1.toLowerCase() === 'labb'|| selectedSwapToken1.toLowerCase() === 'ordi') {
       adjustedSwapAmount = Math.round(swapAmount * 100000000); // 1 btc = 100,000,000 sats
     }
     const amount1 = parseInt(adjustedSwapAmount);
@@ -388,7 +388,7 @@ const SwapAndSend = () => {
     const signMessageOptions = {
       payload: {
         network: {
-          type: NETWORK,
+          type: xverseNetwork,
         },
         address: ordinalsAddress,
         message: JSON.stringify(messageObj),
@@ -615,7 +615,7 @@ const SwapAndSend = () => {
                 justifyContent: 'flex-start',
               }}
             >
-              {selectedSwapToken2.toLowerCase() === "btc" || selectedSwapToken2.toLowerCase() === "pipe" || selectedSwapToken2.toLowerCase() === "testpipe" || selectedSwapToken2.toLowerCase() === "labb"  ? (amount2 / 100000000).toFixed(8) : amount2}
+              {selectedSwapToken2.toLowerCase() === "btc" || selectedSwapToken2.toLowerCase() === "pipe" || selectedSwapToken2.toLowerCase() === "testpipe" || selectedSwapToken2.toLowerCase() === "labb"|| selectedSwapToken2.toLowerCase() === "ordi"  ? (amount2 / 100000000).toFixed(8) : amount2}
             </div>
 
             <select style={{
@@ -766,7 +766,7 @@ const SwapAndSend = () => {
                       </thead>
                       <tbody>
                         {contracts.map((contract, index) => {
-                          const balance = (contract.tick === 'btc' || contract.tick === 'TESTpipe'|| contract.tick === 'pipe'|| contract.tick === 'labb'|| contract.tick === 'LABB')
+                          const balance = (contract.tick === 'btc' || contract.tick === 'TESTpipe'|| contract.tick === 'pipe'|| contract.tick === 'labb'|| contract.tick === 'LABB'|| contract.tick === 'ordi')
                             ? parseFloat((tokenBalances[contract.tick] || 0) / 100000000).toFixed(8)
                             : tokenBalances[contract.tick] || 0;
 

@@ -16,7 +16,7 @@ export default function PipeBridge() {
   });
 
   const [isClicked, setIsClicked] = useState(false);
-  const { ordinalsAddress, paymentAddress,PIPE_endpoint,setPIPE_endpoint,BISON_SEQUENCER_ENDPOINT,NETWORK} = useWallet();
+  const { ordinalsAddress, paymentAddress,PIPE_endpoint,setPIPE_endpoint,BISON_SEQUENCER_ENDPOINT,xverseNetwork} = useWallet();
   const [pipeResponse, setPipeResponse] = useState(null);
   const [isDepositConfirmed, setIsDepositConfirmed] = useState(false);
   const [remainingTime, setRemainingTime] = useState(null);
@@ -139,7 +139,7 @@ export default function PipeBridge() {
     const signMessageOptions = {
       payload: {
         network: {
-          type: NETWORK,
+          type: xverseNetwork,
         },
         address: ordinalsAddress,
         message: JSON.stringify(pegInMessageObj),
@@ -157,7 +157,7 @@ export default function PipeBridge() {
     
     // let all_utxo = [];
     // let rate_fee = {};
-    // if(NETWORK == 'Testnet'){
+    // if(xverseNetwork == 'Testnet'){
     //   const htmlContent=await fetch("https://mempool.space/testnet/api/v1/fees/recommended");
     //   if(htmlContent.status !='200'){
     //     alert("get recomment fee error,please retry later");
@@ -207,7 +207,7 @@ export default function PipeBridge() {
     //     const signPsbtOptions = {
     //         payload: {
     //             network: {
-    //                 type: NETWORK,
+    //                 type: xverseNetwork,
     //             },
     //             message: "Sign Transaction",
     //             psbtBase64: psbtB64,
@@ -501,7 +501,7 @@ export default function PipeBridge() {
     const signMessageOptions = {
       payload: {
         network: {
-          type: NETWORK,
+          type: xverseNetwork,
         },
         address: ordinalsAddress,
         message: JSON.stringify(pegOutMessageObj),
