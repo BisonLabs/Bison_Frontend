@@ -73,7 +73,7 @@ const Layout = ({ children }) => {
   // Close Wallet Connect Modal
   const handleClose = () => {
     setIsModalOpen(false);
-  };
+  }; 
 
   // Click Connect Wallet Button
   const onXverseWalletConnectClick = async () => {
@@ -218,6 +218,7 @@ const Layout = ({ children }) => {
     { path: "/swap-and-send", label: "Swap And Send" },
     { path: "/pipe-bridge", label: "Pipe Bridge" },
     { path: "/labb-bridge", label: "LABB Bridge" },
+    { path: "/ordi-bridge", label: "ORDI Bridge" },
   ];
 
   return (

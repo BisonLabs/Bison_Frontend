@@ -38,7 +38,9 @@ export const WalletProvider = ({ children }) => {
   const [claim_endpoint, setClaim_endpoint] = useState(
     "https://testnet.bisonlabs.io/labb_endpoint"
   );
-
+  const [ORDI_endpoint, setORDI_endpoint] = useState(
+    "https://testnet.bisonlabs.io/labbs_endpoint"
+  );
   return (
     <WalletContext.Provider
       value={{
@@ -71,7 +73,9 @@ export const WalletProvider = ({ children }) => {
         claim_endpoint,
         setClaim_endpoint,
         xverseNetwork,
-        setxverseNetwork
+        setxverseNetwork,
+        ORDI_endpoint,
+        setORDI_endpoint
       }}
     >
       {children}
